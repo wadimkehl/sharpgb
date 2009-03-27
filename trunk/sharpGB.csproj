@@ -131,8 +131,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Notes.txt" />
     <Content Include="flower.ico" />
+    <Content Include="ToDo.txt" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
