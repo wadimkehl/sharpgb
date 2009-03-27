@@ -59,8 +59,9 @@ namespace sharpGB
 {
     public class CMemory
     {
-        public byte[] Data;         // The gameboy memory space
-        public byte CartridgeType;  // The cartridge type (affects memory usage and write/read access)
+        public byte[] Data;             // The gameboy memory space
+        public int[]  AddressToIndex;   // This structure is used to translate an address to an operation index
+        public byte CartridgeType;      // The cartridge type (affects memory usage and write/read access)
 
 
         // Hardware registers mapped to gameboy memory (FF40-FF4C).
@@ -141,7 +142,8 @@ namespace sharpGB
 
         public CMemory()
         {
-            this.Data = new byte[65537];  // 2^16 address space
+            this.Data = new byte[65536];  // 2^16 address space
+            this.AddressToIndex = new int[65536];  // 2^16 address space
         }
 
         // Returns byte at address, considering addressing mode 

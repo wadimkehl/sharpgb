@@ -491,6 +491,7 @@ namespace sharpGB
                 case 0xF0:  // A <- (0xFF00+ n immediate)
                     temp = 0xFF00 + Memory.Data[address + 1];
                     if (temp > 0xFF4B) text = "LD A,(0x" + temp.ToString("X2") + ")";        // RAM read
+                    else if (temp == 0xFFFF) text = "LD A,IE";
                     else text = "LD A," + Enum.GetName(typeof(CMemory.HardwareRegisters), temp); // Give I/O register name
                     break;
 
@@ -537,6 +538,7 @@ namespace sharpGB
                 case 0xE0:  // (0xFF00+ n immediate) <- A  
                     temp = 0xFF00 + Memory.Data[address + 1];
                     if (temp > 0xFF4B) text = "LD (0x" + temp.ToString("X2") + "),A";        // RAM write
+                    else if (temp == 0xFFFF) text = "LD IE,A";
                     else text = "LD " + Enum.GetName(typeof(CMemory.HardwareRegisters), temp) + ",A"; // Give I/O register name
                     break;
                 case 0x08:  // (nn) <- SP
@@ -1255,59 +1257,60 @@ namespace sharpGB
             return text;
         }
 
-        public string DisassembleMemoryAddressWithInfo(ref CMemory Memory, int address)
+        public string AdditionalAddressInformation(int address)
         {
-
-            // string return value
-            string text = DisassembleMemoryAddress(ref Memory, address); ;
-           
-            // Check whether additional info is known for this address
             switch (address)
             {
                 case 0x00:
-                    text += "\t\t #RST 00";
-                    break;
+                    return "#RST 00";                 
                 case 0x08:
-                    text += "\t\t #RST 08";
-                    break;
+                    return "#RST 08";                   
                 case 0x10:
-                    text += "\t\t #RST 10";
-                    break;
+                    return "#RST 10";                   
                 case 0x18:
-                    text += "\t\t #RST 18";
-                    break;
+                    return "#RST 18";               
                 case 0x20:
-                    text += "\t\t #RST 20";
-                    break;
+                    return "#RST 20";                    
                 case 0x28:
-                    text += "\t\t #RST 28";
-                    break;
+                    return "#RST 28";                    
                 case 0x30:
-                    text += "\t\t #RST 30";
-                    break;
+                    return "#RST 30";                  
                 case 0x38:
-                    text += "\t\t #RST 38";
-                    break;
+                    return "#RST 38";                  
                 case 0x40:
-                    text += "\t\t #VBLANK INT";
-                    break;
+                    return "#VBLANK INT";                   
                 case 0x48:
-                    text += "\t\t #LCDC INT";
-                    break;
+                    return "#LCDC INT";
                 case 0x50:
-                    text += "\t\t #TIMER INT";
-                    break;
+                    return "#TIMER INT";
                 case 0x58:
-                    text += "\t\t #SERIAL INT";
-                    break;
+                    return "#SERIAL INT";
                 case 0x60:
-                    text += "\t\t #INPUT INT";
-                    break;
+                    return "#INPUT INT";
                 case 0x100:
-                    text += "\t\t #ROM START";
-                    break;
+                    return "#ROM ENTRY";
+                case 0x4000:
+                    return "#ROM BANK X";
+                case 0x8000:
+                    return "#TILE DATA 0";
+                case 0x8800:
+                    return "#TILE DATA 1";
+                case 0x9800:
+                    return "#TILE MAP 0";
+                case 0x9C00:
+                    return "#TILE MAP 1";
+                case 0xA000:
+                    return "#GAME RAM BANK";
+                case 0xC000:
+                    return "#RAM BANK 0";
+                case 0xD000:
+                    return "#RAM BANK 1-7";
+                case 0xFE00:
+                    return "#OAM";
+                case 0xFF80:
+                    return "#INTERNAL RAM";
             }
-            return text;
+            return "";
         }
         
     

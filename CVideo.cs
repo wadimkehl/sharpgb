@@ -24,8 +24,8 @@ namespace sharpGB
             Shades = new System.Drawing.Color[4];
 
             // Some standard colors to begin with
-            Shades[0] = System.Drawing.ColorTranslator.FromHtml("#0B610B");
-            //Shades[0] = System.Drawing.ColorTranslator.FromHtml("#000000");
+            //Shades[0] = System.Drawing.ColorTranslator.FromHtml("#0B610B");
+            Shades[0] = System.Drawing.ColorTranslator.FromHtml("#000000");
             Shades[1] = System.Drawing.ColorTranslator.FromHtml("#088A08");
             Shades[2] = System.Drawing.ColorTranslator.FromHtml("#04B404");
             Shades[3] = System.Drawing.ColorTranslator.FromHtml("#01DF01");

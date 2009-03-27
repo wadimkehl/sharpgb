@@ -45,10 +45,15 @@
             this.BreakPointListTextBox = new System.Windows.Forms.TextBox();
             this.RemoveBreakPoint = new System.Windows.Forms.Button();
             this.AddBreakPoint = new System.Windows.Forms.Button();
-            this.HexBox = new System.Windows.Forms.TextBox();
+            this.MemoryGroupBox = new System.Windows.Forms.GroupBox();
+            this.FollowCodeCheckBox = new System.Windows.Forms.CheckBox();
+            this.JumpToTextBox = new System.Windows.Forms.TextBox();
+            this.JumpToButton = new System.Windows.Forms.Button();
+            this.HexBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).BeginInit();
             this.BreakpointGroupBox.SuspendLayout();
+            this.MemoryGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -58,7 +63,7 @@
             this.rOMToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(606, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(610, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -102,7 +107,7 @@
             // headerToolStripMenuItem
             // 
             this.headerToolStripMenuItem.Name = "headerToolStripMenuItem";
-            this.headerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.headerToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
             this.headerToolStripMenuItem.Text = "ROM Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
@@ -124,7 +129,7 @@
             // 
             // VideoBox
             // 
-            this.VideoBox.BackColor = System.Drawing.Color.AliceBlue;
+            this.VideoBox.BackColor = System.Drawing.Color.Black;
             this.VideoBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.VideoBox.ErrorImage = null;
             this.VideoBox.InitialImage = null;
@@ -154,7 +159,7 @@
             // 
             // InfoBox
             // 
-            this.InfoBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.InfoBox.BackColor = System.Drawing.Color.CornflowerBlue;
             this.InfoBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.InfoBox.Location = new System.Drawing.Point(278, 58);
             this.InfoBox.Multiline = true;
@@ -187,7 +192,7 @@
             // 
             // BreakPointListTextBox
             // 
-            this.BreakPointListTextBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.BreakPointListTextBox.BackColor = System.Drawing.Color.CornflowerBlue;
             this.BreakPointListTextBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BreakPointListTextBox.Location = new System.Drawing.Point(6, 81);
             this.BreakPointListTextBox.Multiline = true;
@@ -217,25 +222,71 @@
             this.AddBreakPoint.UseVisualStyleBackColor = true;
             this.AddBreakPoint.Click += new System.EventHandler(this.AddBreakPoint_Click);
             // 
+            // MemoryGroupBox
+            // 
+            this.MemoryGroupBox.Controls.Add(this.HexBox);
+            this.MemoryGroupBox.Controls.Add(this.JumpToTextBox);
+            this.MemoryGroupBox.Controls.Add(this.JumpToButton);
+            this.MemoryGroupBox.Controls.Add(this.FollowCodeCheckBox);
+            this.MemoryGroupBox.Location = new System.Drawing.Point(12, 289);
+            this.MemoryGroupBox.Name = "MemoryGroupBox";
+            this.MemoryGroupBox.Size = new System.Drawing.Size(590, 289);
+            this.MemoryGroupBox.TabIndex = 16;
+            this.MemoryGroupBox.TabStop = false;
+            this.MemoryGroupBox.Text = "Memory View";
+            // 
+            // FollowCodeCheckBox
+            // 
+            this.FollowCodeCheckBox.AutoSize = true;
+            this.FollowCodeCheckBox.Checked = true;
+            this.FollowCodeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.FollowCodeCheckBox.Location = new System.Drawing.Point(416, 25);
+            this.FollowCodeCheckBox.Name = "FollowCodeCheckBox";
+            this.FollowCodeCheckBox.Size = new System.Drawing.Size(148, 17);
+            this.FollowCodeCheckBox.TabIndex = 18;
+            this.FollowCodeCheckBox.Text = "Follow PC in memory view";
+            this.FollowCodeCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // JumpToTextBox
+            // 
+            this.JumpToTextBox.Location = new System.Drawing.Point(477, 211);
+            this.JumpToTextBox.Name = "JumpToTextBox";
+            this.JumpToTextBox.Size = new System.Drawing.Size(38, 20);
+            this.JumpToTextBox.TabIndex = 19;
+            this.JumpToTextBox.Text = "FFFF";
+            // 
+            // JumpToButton
+            // 
+            this.JumpToButton.Location = new System.Drawing.Point(423, 203);
+            this.JumpToButton.Name = "JumpToButton";
+            this.JumpToButton.Size = new System.Drawing.Size(108, 36);
+            this.JumpToButton.TabIndex = 20;
+            this.JumpToButton.Text = "Jump To";
+            this.JumpToButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.JumpToButton.UseVisualStyleBackColor = true;
+            this.JumpToButton.Click += new System.EventHandler(this.JumpToButton_Click);
+            // 
             // HexBox
             // 
-            this.HexBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.HexBox.BackColor = System.Drawing.Color.CornflowerBlue;
+            this.HexBox.Cursor = System.Windows.Forms.Cursors.Default;
+            this.HexBox.DetectUrls = false;
             this.HexBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.HexBox.Location = new System.Drawing.Point(12, 289);
-            this.HexBox.Multiline = true;
+            this.HexBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.HexBox.Location = new System.Drawing.Point(6, 19);
             this.HexBox.Name = "HexBox";
             this.HexBox.ReadOnly = true;
-            this.HexBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.HexBox.Size = new System.Drawing.Size(395, 228);
-            this.HexBox.TabIndex = 14;
+            this.HexBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
+            this.HexBox.Size = new System.Drawing.Size(363, 264);
+            this.HexBox.TabIndex = 21;
+            this.HexBox.Text = "";
             this.HexBox.WordWrap = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(606, 523);
-            this.Controls.Add(this.HexBox);
+            this.ClientSize = new System.Drawing.Size(610, 590);
             this.Controls.Add(this.BreakpointGroupBox);
             this.Controls.Add(this.InfoBox);
             this.Controls.Add(this.RunButton);
@@ -243,6 +294,7 @@
             this.Controls.Add(this.VideoBox);
             this.Controls.Add(this.RunStepsButton);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.MemoryGroupBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
@@ -255,6 +307,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).EndInit();
             this.BreakpointGroupBox.ResumeLayout(false);
             this.BreakpointGroupBox.PerformLayout();
+            this.MemoryGroupBox.ResumeLayout(false);
+            this.MemoryGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -280,7 +334,11 @@
         private System.Windows.Forms.Button AddBreakPoint;
         private System.Windows.Forms.TextBox BreakPointAddressTextBox;
         private System.Windows.Forms.TextBox BreakPointListTextBox;
-        private System.Windows.Forms.TextBox HexBox;
+        private System.Windows.Forms.GroupBox MemoryGroupBox;
+        private System.Windows.Forms.CheckBox FollowCodeCheckBox;
+        private System.Windows.Forms.TextBox JumpToTextBox;
+        private System.Windows.Forms.Button JumpToButton;
+        private System.Windows.Forms.RichTextBox HexBox;
     }
 }
 
