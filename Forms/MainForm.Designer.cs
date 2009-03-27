@@ -29,7 +29,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.OpenROMMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,10 +46,11 @@
             this.RemoveBreakPoint = new System.Windows.Forms.Button();
             this.AddBreakPoint = new System.Windows.Forms.Button();
             this.MemoryGroupBox = new System.Windows.Forms.GroupBox();
-            this.FollowCodeCheckBox = new System.Windows.Forms.CheckBox();
+            this.HexBox = new System.Windows.Forms.RichTextBox();
             this.JumpToTextBox = new System.Windows.Forms.TextBox();
             this.JumpToButton = new System.Windows.Forms.Button();
-            this.HexBox = new System.Windows.Forms.RichTextBox();
+            this.FollowCodeCheckBox = new System.Windows.Forms.CheckBox();
+            this.ResetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).BeginInit();
             this.BreakpointGroupBox.SuspendLayout();
@@ -70,29 +71,30 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openROMToolStripMenuItem,
+            this.OpenROMMenuItem,
+            this.ResetMenuItem,
             this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
-            // openROMToolStripMenuItem
+            // OpenROMMenuItem
             // 
-            this.openROMToolStripMenuItem.Name = "openROMToolStripMenuItem";
-            this.openROMToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
-            this.openROMToolStripMenuItem.Text = "Open ROM";
-            this.openROMToolStripMenuItem.Click += new System.EventHandler(this.openROMToolStripMenuItem_Click);
+            this.OpenROMMenuItem.Name = "OpenROMMenuItem";
+            this.OpenROMMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.OpenROMMenuItem.Text = "Open ROM";
+            this.OpenROMMenuItem.Click += new System.EventHandler(this.openROMToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(130, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -235,17 +237,21 @@
             this.MemoryGroupBox.TabStop = false;
             this.MemoryGroupBox.Text = "Memory View";
             // 
-            // FollowCodeCheckBox
+            // HexBox
             // 
-            this.FollowCodeCheckBox.AutoSize = true;
-            this.FollowCodeCheckBox.Checked = true;
-            this.FollowCodeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.FollowCodeCheckBox.Location = new System.Drawing.Point(416, 25);
-            this.FollowCodeCheckBox.Name = "FollowCodeCheckBox";
-            this.FollowCodeCheckBox.Size = new System.Drawing.Size(148, 17);
-            this.FollowCodeCheckBox.TabIndex = 18;
-            this.FollowCodeCheckBox.Text = "Follow PC in memory view";
-            this.FollowCodeCheckBox.UseVisualStyleBackColor = true;
+            this.HexBox.BackColor = System.Drawing.Color.CornflowerBlue;
+            this.HexBox.Cursor = System.Windows.Forms.Cursors.Default;
+            this.HexBox.DetectUrls = false;
+            this.HexBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.HexBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.HexBox.Location = new System.Drawing.Point(6, 19);
+            this.HexBox.Name = "HexBox";
+            this.HexBox.ReadOnly = true;
+            this.HexBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
+            this.HexBox.Size = new System.Drawing.Size(363, 264);
+            this.HexBox.TabIndex = 21;
+            this.HexBox.Text = "";
+            this.HexBox.WordWrap = false;
             // 
             // JumpToTextBox
             // 
@@ -266,21 +272,24 @@
             this.JumpToButton.UseVisualStyleBackColor = true;
             this.JumpToButton.Click += new System.EventHandler(this.JumpToButton_Click);
             // 
-            // HexBox
+            // FollowCodeCheckBox
             // 
-            this.HexBox.BackColor = System.Drawing.Color.CornflowerBlue;
-            this.HexBox.Cursor = System.Windows.Forms.Cursors.Default;
-            this.HexBox.DetectUrls = false;
-            this.HexBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.HexBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.HexBox.Location = new System.Drawing.Point(6, 19);
-            this.HexBox.Name = "HexBox";
-            this.HexBox.ReadOnly = true;
-            this.HexBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.HexBox.Size = new System.Drawing.Size(363, 264);
-            this.HexBox.TabIndex = 21;
-            this.HexBox.Text = "";
-            this.HexBox.WordWrap = false;
+            this.FollowCodeCheckBox.AutoSize = true;
+            this.FollowCodeCheckBox.Checked = true;
+            this.FollowCodeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.FollowCodeCheckBox.Location = new System.Drawing.Point(416, 25);
+            this.FollowCodeCheckBox.Name = "FollowCodeCheckBox";
+            this.FollowCodeCheckBox.Size = new System.Drawing.Size(148, 17);
+            this.FollowCodeCheckBox.TabIndex = 18;
+            this.FollowCodeCheckBox.Text = "Follow PC in memory view";
+            this.FollowCodeCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // ResetMenuItem
+            // 
+            this.ResetMenuItem.Name = "ResetMenuItem";
+            this.ResetMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ResetMenuItem.Text = "Reset";
+            this.ResetMenuItem.Click += new System.EventHandler(this.ResetMenuItem_Click);
             // 
             // MainForm
             // 
@@ -318,7 +327,7 @@
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openROMToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem OpenROMMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.ToolStripMenuItem rOMToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem headerToolStripMenuItem;
@@ -339,6 +348,7 @@
         private System.Windows.Forms.TextBox JumpToTextBox;
         private System.Windows.Forms.Button JumpToButton;
         private System.Windows.Forms.RichTextBox HexBox;
+        private System.Windows.Forms.ToolStripMenuItem ResetMenuItem;
     }
 }
 
