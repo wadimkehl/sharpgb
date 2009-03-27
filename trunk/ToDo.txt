@@ -5,8 +5,6 @@ Gelöst mit +2 jeweils???
 
 
 - Loads beeinflussen CPU Flags?
-- Interrupts raising und Bearbeitung trennen?
-- Interrupts reseten IF Register auf 0. So richtig oder nur jeweiliges Flag auf 0 ?
 - Arithmetische Operationen haben keine Carry-Berechnung...
 - Allgemein fehlen bei manchen Operationen Flag-Angaben
 

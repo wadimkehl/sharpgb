@@ -13,7 +13,7 @@ namespace sharpGB
 
         // Some instructions determine the behaviour of the CPU
         public bool IME;                    // Turn on/off interrupt handling
-        public bool DIsignaled, EIsignaled; // Instructions DI and EI set these
+        public int DIsignaled, EIsignaled;  // Instructions DI and EI set these
         public bool CPUHalt, CPUStop;       // Set by instructions as well
 
         // The four flag register entries

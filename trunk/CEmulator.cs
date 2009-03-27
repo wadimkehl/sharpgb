@@ -35,6 +35,7 @@ namespace sharpGB
 
         public int ClockCyclesElapsed;          // Elapsed cpu clock cycles
         public int MachineCyclesElapsed;        // Elapsed gameboy clock cycles
+        public int LYCounter;                   // Will signal when another display line is to draw
         public int LastInstructionClockCycle;   // Clock cycle duration of the last executed instruction
         public bool EmulationRunning;           // Flag indicating emulator running
         public bool UnknownOPcode;              // True if OPcode not implemented
@@ -156,15 +157,18 @@ namespace sharpGB
             EmulationRunning = true;
 
             // Check whether last instruction signaled a change in interrupt handling
-            if (Processor.DIsignaled)
+            // DI and EI take effect AFTER the next instruction following them
+            if (Processor.DIsignaled == 1)Processor.DIsignaled++;
+            else if (Processor.DIsignaled == 2)
             {
-                Processor.DIsignaled = false;
+                Processor.DIsignaled = 0;
                 Processor.IME = false;
             }
-            else if (Processor.EIsignaled)
+            if (Processor.EIsignaled == 1)Processor.EIsignaled++;
+            else if (Processor.EIsignaled == 2)
             {
-                Processor.EIsignaled = false;
-                Processor.IME = true;
+                Processor.EIsignaled = 0;
+                Processor.IME = false;
             }
 
             // Current OPcode is NextOPCode from last turn
@@ -183,21 +187,22 @@ namespace sharpGB
             // Fetch next instruction at PC and increment cycle counters
             NextOPcode = Memory.Data[Processor.PC];
             ClockCyclesElapsed += LastInstructionClockCycle;
+            LYCounter += LastInstructionClockCycle;
             MachineCyclesElapsed++;
 
             
-            // Now on to handling interrupts:
-
             // Every 456(144) clock(machine) cycles, one of the 144 screen lines is drawn
             // After that there is a VBlank-IRQ with a period of 10 scanlines.
-            if (ClockCyclesElapsed % 456 == 0)
+            if (LYCounter => 456)
             {
+                LYCounter = 0;
+
                 // Increase the current line the gameboy display driver is to draw
                 Memory.Data[(int)CMemory.HardwareRegisters.LY]++;
 
                 // Check if VBLANK interrupt arises or correct LY if needed
                 if (Memory.Data[(int)CMemory.HardwareRegisters.LY] == 144)
-                    IRQ(IRQType.VBLANK);
+                    RaiseIRQ(IRQType.VBLANK);
                 else if (Memory.Data[(int)CMemory.HardwareRegisters.LY] > 153)
                     Memory.Data[(int)CMemory.HardwareRegisters.LY] = 0;
 
@@ -215,8 +220,9 @@ namespace sharpGB
             // Serial Transfer IRQ
 
             // High-to-Low P10-P13 (key input handling)
-            
 
+            // Check whether interrupts are to be handled
+            if (Processor.IME) DoIdleIRQs();
         }
 
         // Emulate until encountered a problem or aborted
@@ -1624,7 +1630,7 @@ namespace sharpGB
                 case 0xD9:  // unconditional plus enable interrupts (RETI)
                     word = (ushort)(StackPop() << 8);
                     Processor.PC += (ushort)(word + StackPop());
-                    Processor.EIsignaled = true;
+                    Processor.EIsignaled = 1;
                     cycles = 8;
                     break;
                 case 0xC0:  // Conditional NZ 
@@ -2028,13 +2034,13 @@ namespace sharpGB
                     break;
 
                 case 0xF3:  // Disable Interrupts (DI)
-                    Processor.DIsignaled = true;  // Interrupts Mode will change after next opcode, so signal it
+                    Processor.DIsignaled = 1;  // Interrupts Mode will change after next opcode, so signal it
                     Processor.PC++;
                     cycles = 4;
                     break;
 
                 case 0xFB:  // Enable Interrupts (EI)
-                    Processor.EIsignaled = true;  // same here, will take effect AFTER THE NEXT instruction
+                    Processor.EIsignaled = 1;  // same here, will take effect AFTER THE NEXT instruction
                     Processor.PC++;
                     cycles = 4;
                     break;
@@ -2086,7 +2092,7 @@ namespace sharpGB
         }
 
         // Raise an interrupt
-        void IRQ(IRQType type)
+        void RaiseIRQ(IRQType type)
         {
 
             // Set bit in the IF register
@@ -2112,64 +2118,72 @@ namespace sharpGB
                     Memory.Data[(int)CMemory.HardwareRegisters.IF] |= 0x10;
                     break;
             }
+        }
 
-
-            // Check whether interrupts are to be handled
-            if (!Processor.IME) return;
-
-            // Check if corresponding IE flag is set. If yes:
+        // Handle waiting interrupts
+        void DoIdleIRQs()
+        {
+            // Check if corresponding IE and IF flag is set. If yes:
             // 1. Reset IME flag
-            // 2. Reset IF register
+            // 2. Reset bit in IF register
             // 3. Reset jump to interrupt routine
-            switch (type)
+
+            // VBLANK
+            if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x01) > 0) &&
+                ((Memory.Data[(int)CMemory.HardwareRegisters.IF] & 0x01) > 0))
             {
-                case IRQType.VBLANK:
-                    if ((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x01) > 0)
-                    {
-                        Processor.IME = false;
-                        Memory.Data[(int)CMemory.HardwareRegisters.IF] = 0x00;
-                        Reset(0x0040);
-                    }
-                    break;
-
-                case IRQType.LCDC:
-                    if ((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x02) > 0)
-                    {
-                        Processor.IME = false;
-                        Memory.Data[(int)CMemory.HardwareRegisters.IF] = 0x00;
-                        Reset(0x0048);
-                    } 
-                    break;
-
-                case IRQType.TIMER:
-                    if ((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x04) > 0)
-                    {
-                        Processor.IME = false;
-                        Memory.Data[(int)CMemory.HardwareRegisters.IF] = 0x00;
-                        Reset(0x0050);
-                    } 
-                    break;
-
-                case IRQType.SERIALIO:
-                    if ((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x08) > 0)
-                    {
-                        Processor.IME = false;
-                        Memory.Data[(int)CMemory.HardwareRegisters.IF] = 0x00;
-                        Reset(0x0058);
-                    } 
-                    break;
-
-                case IRQType.HIGHTOLOW:
-                    if ((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x10) > 0)
-                    {
-                        Processor.IME = false;
-                        Memory.Data[(int)CMemory.HardwareRegisters.IF] = 0x00;
-                        Reset(0x0060);
-                    } 
-                    break;
+                Processor.IME = false;
+                Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFE;
+                Reset(0x0040);
+                ClockCyclesElapsed += 12; // correct cycles?
+                LYCounter += 12;
+                MachineCyclesElapsed++;
+                
             }
-
-
+            // LCD STAT
+            if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x02) > 0) &&
+                ((Memory.Data[(int)CMemory.HardwareRegisters.IF] & 0x02) > 0))
+            {
+                Processor.IME = false;
+                Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFD;
+                Reset(0x0048);
+                ClockCyclesElapsed += 12; // correct cycles?
+                LYCounter += 12;
+                MachineCyclesElapsed++;
+            }
+            // TIMER
+            if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x04) > 0) &&
+                ((Memory.Data[(int)CMemory.HardwareRegisters.IF] & 0x04) > 0))
+            {
+                Processor.IME = false;
+                Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFB;
+                Reset(0x0050);
+                ClockCyclesElapsed += 12; // correct cycles?
+                LYCounter += 12;
+                MachineCyclesElapsed++;
+            }
+            // SERIALIO
+            if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x08) > 0) &&
+                ((Memory.Data[(int)CMemory.HardwareRegisters.IF] & 0x08) > 0))
+            {
+                Processor.IME = false;
+                Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xF7;
+                Reset(0x0058);
+                ClockCyclesElapsed += 12; // correct cycles?
+                LYCounter += 12;
+                MachineCyclesElapsed++;
+            }
+            // INPUT
+            if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x10) > 0) &&
+                ((Memory.Data[(int)CMemory.HardwareRegisters.IF] & 0x10) > 0))
+            {
+                Processor.IME = false;
+                Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xEF;
+                Reset(0x0060);
+                ClockCyclesElapsed += 12; // correct cycles?
+                LYCounter += 12;
+                MachineCyclesElapsed++;
+            } 
         }
 
  
