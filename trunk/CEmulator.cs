@@ -103,7 +103,8 @@ namespace sharpGB
                  ROM.CheckSumOK = true;
             else ROM.CheckSumOK = false;
 
-            Memory.Data[0xFFFF] = 0;
+            // Reset the screen
+            Video.VBlank();
 
             return true;
          }
@@ -115,9 +116,11 @@ namespace sharpGB
             CurrentOPcode = 0x00;
             NextOPcode = 0x00;
             ClockCyclesElapsed = 0;
+            LYCounter = 0;
             MachineCyclesElapsed = 0;
             BreakPoints.Clear();
             BreakPointReached = false;
+            this.EmulationRunning = true;
 
             Memory.Data[(int)CMemory.HardwareRegisters.TIMA] = 0x00;
             Memory.Data[(int)CMemory.HardwareRegisters.TMA] = 0x00;
@@ -138,8 +141,8 @@ namespace sharpGB
             Memory.Data[(int)CMemory.HardwareRegisters.OBP1] = 0xFF;
             Memory.Data[(int)CMemory.HardwareRegisters.WY] = 0x00;
             Memory.Data[(int)CMemory.HardwareRegisters.WX] = 0x00;
+            Memory.Data[(int)CMemory.HardwareRegisters.IF] = 0x00;
             Memory.Data[(int)CMemory.HardwareRegisters.IE] = 0x00;
-
 
 
             Processor.A = 0x01;
@@ -147,11 +150,19 @@ namespace sharpGB
             Processor.C = 0x13;
             Processor.D = 0x00;
             Processor.E = 0xD8;
-            Processor.F = 0xB0;
             Processor.H = 0x01;
             Processor.L = 0x4D;
             Processor.PC = 0x0100;   
-            Processor.SP = 0xFFFE;   
+            Processor.SP = 0xFFFE;
+
+            Processor.ZeroFlag = 1;
+            Processor.SubtractFlag = 0;
+            Processor.HalfCarryFlag = 1;
+            Processor.CarryFlag = 1;
+
+            // Assemble the F register
+            Processor.F = (byte)((Processor.ZeroFlag << 7) | (Processor.SubtractFlag << 6) |
+                          (Processor.HalfCarryFlag << 5) | (Processor.CarryFlag << 4));
         }
 
         // Add breakpoint for debugging
@@ -191,19 +202,15 @@ namespace sharpGB
             // Current OPcode is NextOPCode from last turn
             CurrentOPcode = NextOPcode;
 
-            // Check if this address is a breakpoint
-            if (BreakPoints.Contains(Processor.PC))
-            {
-                BreakPointReached = true;
-                EmulationRunning = false;   
-                return;
-            }
-
             // Run the operation and save clock cycle of OPcode
             LastInstructionClockCycle = DecodeAndExecute(CurrentOPcode);
 
+            // Check if the new PC position is a breakpoint
+            if (BreakPoints.Contains(Processor.PC))
+                BreakPointReached = true;
+
             // Check if there is a reason to halt the emulation
-            if (UnknownOPcode || UnknownOperand || !EmulationRunning)
+            if (UnknownOPcode || UnknownOperand || !EmulationRunning || BreakPointReached)
             {
                 EmulationRunning = false;   // Stop emulation
                 return;
@@ -280,9 +287,11 @@ namespace sharpGB
                 BreakPointReached = false;
             }
             else if (UnknownOPcode)
-                System.Windows.Forms.MessageBox.Show("Uknown OPcode: " + Memory.Data[Processor.PC].ToString("X2"));
+                System.Windows.Forms.MessageBox.Show("Unknown OPcode: " + Memory.Data[Processor.PC].ToString("X2"));
             else if (UnknownOperand)
-                System.Windows.Forms.MessageBox.Show("Uknown operand: " + Memory.Data[Processor.PC+1].ToString("X2"));
+                System.Windows.Forms.MessageBox.Show("Unknown operand: " + Memory.Data[Processor.PC+1].ToString("X2"));
+
+            EmulationRunning = true;
   
 
         }

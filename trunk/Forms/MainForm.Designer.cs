@@ -34,15 +34,21 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.romHexViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.RunStepsButton = new System.Windows.Forms.Button();
             this.VideoBox = new System.Windows.Forms.PictureBox();
             this.RunBox = new System.Windows.Forms.TextBox();
             this.RunButton = new System.Windows.Forms.Button();
             this.InfoBox = new System.Windows.Forms.TextBox();
+            this.BreakpointGroupBox = new System.Windows.Forms.GroupBox();
+            this.BreakPointAddressTextBox = new System.Windows.Forms.TextBox();
+            this.BreakPointListTextBox = new System.Windows.Forms.TextBox();
+            this.RemoveBreakPoint = new System.Windows.Forms.Button();
+            this.AddBreakPoint = new System.Windows.Forms.Button();
+            this.HexBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).BeginInit();
+            this.BreakpointGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -52,7 +58,7 @@
             this.rOMToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(755, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(606, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -88,8 +94,7 @@
             // rOMToolStripMenuItem
             // 
             this.rOMToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.headerToolStripMenuItem,
-            this.romHexViewToolStripMenuItem});
+            this.headerToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
             this.rOMToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
             this.rOMToolStripMenuItem.Text = "Debug";
@@ -101,13 +106,6 @@
             this.headerToolStripMenuItem.Text = "ROM Header";
             this.headerToolStripMenuItem.Click += new System.EventHandler(this.headerToolStripMenuItem_Click);
             // 
-            // romHexViewToolStripMenuItem
-            // 
-            this.romHexViewToolStripMenuItem.Name = "romHexViewToolStripMenuItem";
-            this.romHexViewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.romHexViewToolStripMenuItem.Text = "ROM Hex View";
-            this.romHexViewToolStripMenuItem.Click += new System.EventHandler(this.romHexViewToolStripMenuItem_Click);
-            // 
             // openFileDialog1
             // 
             this.openFileDialog1.Filter = "Gameboy ROMS|*.gb; *.gbc";
@@ -116,7 +114,7 @@
             // 
             // RunStepsButton
             // 
-            this.RunStepsButton.Location = new System.Drawing.Point(343, 28);
+            this.RunStepsButton.Location = new System.Drawing.Point(278, 27);
             this.RunStepsButton.Name = "RunStepsButton";
             this.RunStepsButton.Size = new System.Drawing.Size(88, 23);
             this.RunStepsButton.TabIndex = 7;
@@ -138,7 +136,7 @@
             // 
             // RunBox
             // 
-            this.RunBox.Location = new System.Drawing.Point(437, 30);
+            this.RunBox.Location = new System.Drawing.Point(372, 29);
             this.RunBox.Name = "RunBox";
             this.RunBox.Size = new System.Drawing.Size(75, 20);
             this.RunBox.TabIndex = 10;
@@ -146,28 +144,99 @@
             // 
             // RunButton
             // 
-            this.RunButton.Location = new System.Drawing.Point(274, 29);
+            this.RunButton.Location = new System.Drawing.Point(453, 29);
             this.RunButton.Name = "RunButton";
             this.RunButton.Size = new System.Drawing.Size(63, 23);
             this.RunButton.TabIndex = 11;
             this.RunButton.Text = "Run";
             this.RunButton.UseVisualStyleBackColor = true;
+            this.RunButton.Click += new System.EventHandler(this.RunButton_Click);
             // 
             // InfoBox
             // 
+            this.InfoBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.InfoBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.InfoBox.Location = new System.Drawing.Point(278, 58);
             this.InfoBox.Multiline = true;
             this.InfoBox.Name = "InfoBox";
             this.InfoBox.ReadOnly = true;
             this.InfoBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.InfoBox.Size = new System.Drawing.Size(234, 217);
+            this.InfoBox.Size = new System.Drawing.Size(234, 225);
             this.InfoBox.TabIndex = 12;
+            // 
+            // BreakpointGroupBox
+            // 
+            this.BreakpointGroupBox.Controls.Add(this.BreakPointAddressTextBox);
+            this.BreakpointGroupBox.Controls.Add(this.BreakPointListTextBox);
+            this.BreakpointGroupBox.Controls.Add(this.RemoveBreakPoint);
+            this.BreakpointGroupBox.Controls.Add(this.AddBreakPoint);
+            this.BreakpointGroupBox.Location = new System.Drawing.Point(518, 30);
+            this.BreakpointGroupBox.Name = "BreakpointGroupBox";
+            this.BreakpointGroupBox.Size = new System.Drawing.Size(84, 253);
+            this.BreakpointGroupBox.TabIndex = 13;
+            this.BreakpointGroupBox.TabStop = false;
+            this.BreakpointGroupBox.Text = "Breakpoints";
+            // 
+            // BreakPointAddressTextBox
+            // 
+            this.BreakPointAddressTextBox.Location = new System.Drawing.Point(6, 26);
+            this.BreakPointAddressTextBox.Name = "BreakPointAddressTextBox";
+            this.BreakPointAddressTextBox.Size = new System.Drawing.Size(71, 20);
+            this.BreakPointAddressTextBox.TabIndex = 3;
+            this.BreakPointAddressTextBox.Text = "FFFF";
+            // 
+            // BreakPointListTextBox
+            // 
+            this.BreakPointListTextBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.BreakPointListTextBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BreakPointListTextBox.Location = new System.Drawing.Point(6, 81);
+            this.BreakPointListTextBox.Multiline = true;
+            this.BreakPointListTextBox.Name = "BreakPointListTextBox";
+            this.BreakPointListTextBox.ReadOnly = true;
+            this.BreakPointListTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.BreakPointListTextBox.Size = new System.Drawing.Size(71, 164);
+            this.BreakPointListTextBox.TabIndex = 2;
+            // 
+            // RemoveBreakPoint
+            // 
+            this.RemoveBreakPoint.Location = new System.Drawing.Point(42, 52);
+            this.RemoveBreakPoint.Name = "RemoveBreakPoint";
+            this.RemoveBreakPoint.Size = new System.Drawing.Size(35, 25);
+            this.RemoveBreakPoint.TabIndex = 1;
+            this.RemoveBreakPoint.Text = "-";
+            this.RemoveBreakPoint.UseVisualStyleBackColor = true;
+            this.RemoveBreakPoint.Click += new System.EventHandler(this.RemoveBreakPoint_Click);
+            // 
+            // AddBreakPoint
+            // 
+            this.AddBreakPoint.Location = new System.Drawing.Point(6, 52);
+            this.AddBreakPoint.Name = "AddBreakPoint";
+            this.AddBreakPoint.Size = new System.Drawing.Size(35, 25);
+            this.AddBreakPoint.TabIndex = 0;
+            this.AddBreakPoint.Text = "+";
+            this.AddBreakPoint.UseVisualStyleBackColor = true;
+            this.AddBreakPoint.Click += new System.EventHandler(this.AddBreakPoint_Click);
+            // 
+            // HexBox
+            // 
+            this.HexBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.HexBox.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.HexBox.Location = new System.Drawing.Point(12, 289);
+            this.HexBox.Multiline = true;
+            this.HexBox.Name = "HexBox";
+            this.HexBox.ReadOnly = true;
+            this.HexBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.HexBox.Size = new System.Drawing.Size(395, 228);
+            this.HexBox.TabIndex = 14;
+            this.HexBox.WordWrap = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(755, 287);
+            this.ClientSize = new System.Drawing.Size(606, 523);
+            this.Controls.Add(this.HexBox);
+            this.Controls.Add(this.BreakpointGroupBox);
             this.Controls.Add(this.InfoBox);
             this.Controls.Add(this.RunButton);
             this.Controls.Add(this.RunBox);
@@ -184,6 +253,8 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).EndInit();
+            this.BreakpointGroupBox.ResumeLayout(false);
+            this.BreakpointGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -199,12 +270,17 @@
         private System.Windows.Forms.ToolStripMenuItem headerToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem romHexViewToolStripMenuItem;
         private System.Windows.Forms.Button RunStepsButton;
         private System.Windows.Forms.PictureBox VideoBox;
         private System.Windows.Forms.TextBox RunBox;
         private System.Windows.Forms.Button RunButton;
         private System.Windows.Forms.TextBox InfoBox;
+        private System.Windows.Forms.GroupBox BreakpointGroupBox;
+        private System.Windows.Forms.Button RemoveBreakPoint;
+        private System.Windows.Forms.Button AddBreakPoint;
+        private System.Windows.Forms.TextBox BreakPointAddressTextBox;
+        private System.Windows.Forms.TextBox BreakPointListTextBox;
+        private System.Windows.Forms.TextBox HexBox;
     }
 }
 
