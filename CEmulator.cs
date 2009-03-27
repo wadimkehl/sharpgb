@@ -191,18 +191,23 @@ namespace sharpGB
             MachineCyclesElapsed++;
 
             
+            // VBLANK IRQ - Occurs only when display is enabled
             // Every 456(144) clock(machine) cycles, one of the 144 screen lines is drawn
             // After that there is a VBlank-IRQ with a period of 10 scanlines.
-            if (LYCounter >= 456)
+            if (LYCounter >= 456 && (Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x80)>0)
             {
                 LYCounter = 0;
 
                 // Increase the current line the gameboy display driver is to draw
                 Memory.Data[(int)CMemory.HardwareRegisters.LY]++;
+                Video.DrawLine();
 
                 // Check if VBLANK interrupt arises or correct LY if needed
                 if (Memory.Data[(int)CMemory.HardwareRegisters.LY] == 144)
+                {
                     RaiseIRQ(IRQType.VBLANK);
+                    Video.VBlank();
+                }
                 else if (Memory.Data[(int)CMemory.HardwareRegisters.LY] > 153)
                     Memory.Data[(int)CMemory.HardwareRegisters.LY] = 0;
 

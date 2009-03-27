@@ -38,76 +38,55 @@ namespace sharpGB
         }
 
 
-        // Draws a frame, keeping in mind all constraints and cases
-        unsafe public void DrawFrame()
+        // Emulates the gameboy display driver that draws the frame line by line
+        public void DrawLine()
         {
-            // Only draw if LCD is enabled
-            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x80) == 0)
-                return;
+            int CurrentLine = Memory.Data[(int)CMemory.HardwareRegisters.LY];
+            int TileDataAddress = (Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x10) == 0 ? 0x8800 : 0x8000;
+            int TileMapAddress = (Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x08) == 0 ? 0x9800 : 0x9C00;
+            int b1, b2, TileOffset;
 
-            // Check what is to be drawn
-            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x01) == 1) DrawBackground();
-            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x20) == 1) DrawWindow();
-            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x02) == 1) DrawObjects();
+            // Check if background layer is activated
+            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x01) > 0)
+                for (int x = 0; x < 256; x += 8)
+                {
+                    TileOffset = Memory.Data[TileMapAddress + x / 8];
+                    if (TileDataAddress == 0x8800) TileOffset += 128;   // Tile indices here are excess -128
+                    b1 = Memory.Data[TileDataAddress + TileOffset];
+                    b2 = Memory.Data[TileDataAddress + TileOffset + 1];
+                    Pixels[x + 0, CurrentLine] = (b1 & 0x80) + (b2 & 0x80) * 2;
+                    Pixels[x + 1, CurrentLine] = (b1 & 0x40) + (b2 & 0x40) * 2;
+                    Pixels[x + 2, CurrentLine] = (b1 & 0x20) + (b2 & 0x20) * 2;
+                    Pixels[x + 3, CurrentLine] = (b1 & 0x10) + (b2 & 0x10) * 2;
+                    Pixels[x + 4, CurrentLine] = (b1 & 0x08) + (b2 & 0x08) * 2;
+                    Pixels[x + 5, CurrentLine] = (b1 & 0x04) + (b2 & 0x04) * 2;
+                    Pixels[x + 6, CurrentLine] = (b1 & 0x02) + (b2 & 0x02) * 2;
+                    Pixels[x + 7, CurrentLine] = (b1 & 0x01) + (b2 & 0x01) * 2;
+                }
 
-            // Convert the filled Pixels array to the buffer object and draw it to the screen
+            // Check if window overlay is activated
+            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x20) > 0);
+
+            // Check if object layer is activated
+            if ((Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x02) > 0);
+
+        }
+
+        // Signals that the off-frame buffer can be swapped
+        public void VBlank()
+
+        {
+
             for (int i = 0; i < 256; i++)
                 for (int j = 0; j < 256; j++)
                     Buffer.SetPixel(i, j, Shades[Pixels[i, j]]);
 
             Video.DrawImage(Buffer, 0, 0);
-            
-
         }
 
-        unsafe public void DrawBackground()
-        {
-            // Determine Tile Map and Tile Data addresses
-            int TileDataAddress = (Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x10) == 0 ? 0x8800 : 0x8000;  
-            int TileMapAddress  = (Memory.Data[(int)CMemory.HardwareRegisters.LCDC] & 0x08) == 0 ? 0x9800 : 0x9C00;
-            int b1, b2, TileOffset, x=0, y=0, rely=0;
+       
 
 
-            for (int i = TileMapAddress; i < TileMapAddress + 0x400; i++)   // Run through tile map
-            {
-                TileOffset = Memory.Data[i];      // Get tile index
-                b1 = Memory.Data[TileDataAddress + TileOffset];
-                b2 = Memory.Data[TileDataAddress + TileOffset + 1];
-
-                // This is the way the gameboy stores its tile data... not very intuitive
-                Pixels[x,y+rely]        = (b1 & 0x80) + (b2 & 0x80) * 2;
-                Pixels[x + 1, y + rely] = (b1 & 0x40) + (b2 & 0x40) * 2;
-                Pixels[x + 2, y + rely] = (b1 & 0x20) + (b2 & 0x20) * 2;
-                Pixels[x + 3, y + rely] = (b1 & 0x10) + (b2 & 0x10) * 2;
-                Pixels[x + 4, y + rely] = (b1 & 0x08) + (b2 & 0x08) * 2;
-                Pixels[x + 5, y + rely] = (b1 & 0x04) + (b2 & 0x04) * 2;
-                Pixels[x + 6, y + rely] = (b1 & 0x02) + (b2 & 0x02) * 2;
-                Pixels[x + 7, y + rely] = (b1 & 0x01) + (b2 & 0x01) * 2;
-
-                // Adjusting variables
-                rely++;  
-                if (rely == 8)   // Check if tile is entirely "drawn" to Pixels
-                {
-                    rely = 0;
-                    x += 8;
-                    if (x == 256)   // Check if right border is reached
-                    {
-                        x = 0;
-                        y += 8;
-                    }
-                }
-            }
-
-        }
-
-        unsafe public void DrawWindow()
-        {
-            
-        }
-
-        unsafe public void DrawObjects()
-        {
-
-        }
+     
     }
 }
