@@ -3,6 +3,7 @@
 - Checken ob die relativen Sprünge so richtig sind (beim CEmu und CDis)
 Gelöst mit +2 jeweils???
 
+- OPCode: 31 FF CF  LD SP, 0xCFFF oder 0XFFFC
 
 - Loads beeinflussen CPU Flags?
 - Arithmetische Operationen haben keine Carry-Berechnung...
