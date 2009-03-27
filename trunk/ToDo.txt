@@ -9,6 +9,12 @@ Gelöst mit +2 jeweils???
 - Arithmetische Operationen haben keine Carry-Berechnung...
 - Allgemein fehlen bei manchen Operationen Flag-Angaben
 
+
+Super Mario bei 0x01DB  geschieht was merkwürdiges...
+0x01DB 21 FF FE   LD HL,0xFEFF    
+HL wird nicht gefüllt und FE soll als nächstes ausgeführt werden!?
+Kommt IRQ in die Quere?
+
 CB C7	set 0, a
 CB CF	set 1, a
 CB FF	set 7, a

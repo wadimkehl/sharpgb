@@ -87,6 +87,13 @@ namespace sharpGB
         {
             JumpToAddress(Int32.Parse(JumpToTextBox.Text, System.Globalization.NumberStyles.HexNumber));
         }
+        private void ResetMenuItem_Click(object sender, EventArgs e)
+        {
+            Program.Emulator.Reset();
+            UpdateInfoBox();
+            UpdateBreakpointBox();
+            if (FollowCodeCheckBox.Checked) JumpToAddress(Program.Emulator.Processor.PC);
+        }
 
 
         private delegate void ClearDelegate();
@@ -193,8 +200,16 @@ namespace sharpGB
             int cursor = HexBox.GetFirstCharIndexFromLine(line);
             HexBox.Select(cursor, HexBox.Lines[line].Length);
             HexBox.SelectionBackColor = System.Drawing.Color.Tan;
+            if (line > 5)
+            {
+                cursor = HexBox.GetFirstCharIndexFromLine(line - 5);
+                HexBox.Select(cursor, 0);
+            }
+
             HexBox.ScrollToCaret();
         }
+
+
 
 
 
