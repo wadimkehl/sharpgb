@@ -40,7 +40,9 @@ namespace sharpGB
         public bool EmulationRunning;           // Flag indicating emulator running
         public bool UnknownOPcode;              // True if OPcode not implemented
         public bool UnknownOperand;             // True if OPcode has unexpected operand
+        public bool BreakPointReached;          // True if PC stands at a breakpoint
         public byte CurrentOPcode, NextOPcode;  // current and next OPcode to execute
+        public List<int> BreakPoints;           // List of addresses the emulator is to stop
 
 
         public CEmulator()
@@ -51,6 +53,7 @@ namespace sharpGB
             this.Processor = new CProcessor();
             this.Video = new CVideo(ref this.Memory);
             this.EmulationRunning = true;
+            this.BreakPoints = new List<int>();
 
             Reset();
         }
@@ -113,6 +116,8 @@ namespace sharpGB
             NextOPcode = 0x00;
             ClockCyclesElapsed = 0;
             MachineCyclesElapsed = 0;
+            BreakPoints.Clear();
+            BreakPointReached = false;
 
             Memory.Data[(int)CMemory.HardwareRegisters.TIMA] = 0x00;
             Memory.Data[(int)CMemory.HardwareRegisters.TMA] = 0x00;
@@ -149,7 +154,19 @@ namespace sharpGB
             Processor.SP = 0xFFFE;   
         }
 
+        // Add breakpoint for debugging
+        public void AddBreakPoint(int address)
+        {
+            if (!BreakPoints.Contains(address))
+                BreakPoints.Add(address);
+        }
 
+        // Remove breakpoint
+        public void RemoveBreakPoint(int address)
+        {
+            if (BreakPoints.Contains(address))
+                BreakPoints.Remove(address);
+        }
 
         // Emulates a complete machine cycle
         public void EmulateNextStep()
@@ -174,10 +191,18 @@ namespace sharpGB
             // Current OPcode is NextOPCode from last turn
             CurrentOPcode = NextOPcode;
 
+            // Check if this address is a breakpoint
+            if (BreakPoints.Contains(Processor.PC))
+            {
+                BreakPointReached = true;
+                EmulationRunning = false;   
+                return;
+            }
+
             // Run the operation and save clock cycle of OPcode
             LastInstructionClockCycle = DecodeAndExecute(CurrentOPcode);
 
-            // Check if OPcode is unknown, operand is unexpected or emulation stopped
+            // Check if there is a reason to halt the emulation
             if (UnknownOPcode || UnknownOperand || !EmulationRunning)
             {
                 EmulationRunning = false;   // Stop emulation
@@ -242,6 +267,24 @@ namespace sharpGB
         {
             for (int i = 0; i < n && EmulationRunning; i++ )
                 EmulateNextStep();
+        }
+
+        // Shows a window with more information on emulator halt
+        public void ShowError()
+        {
+            if (EmulationRunning) return;
+
+            if (BreakPointReached)
+            {
+                System.Windows.Forms.MessageBox.Show("Reached breakpoint at 0x" + Processor.PC.ToString("X4"));
+                BreakPointReached = false;
+            }
+            else if (UnknownOPcode)
+                System.Windows.Forms.MessageBox.Show("Uknown OPcode: " + Memory.Data[Processor.PC].ToString("X2"));
+            else if (UnknownOperand)
+                System.Windows.Forms.MessageBox.Show("Uknown operand: " + Memory.Data[Processor.PC+1].ToString("X2"));
+  
+
         }
 
 
@@ -2190,6 +2233,8 @@ namespace sharpGB
                 MachineCyclesElapsed++;
             } 
         }
+
+
 
  
     }

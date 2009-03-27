@@ -11,7 +11,6 @@ namespace sharpGB
     public partial class MainForm : Form
     {
         RomHeaderForm RHF;
-        Forms.CPUView CPUV;
         Forms.HexView HexV;
 
 
@@ -60,32 +59,6 @@ namespace sharpGB
 
 
 
-
-        private void EmulateNextStepButton_Click(object sender, EventArgs e)
-        {
-
-            Program.Emulator.EmulateNextStep();
-
-            if (CPUV != null) CPUV.UpdateView(ref Program.Emulator);
-
-            if (!Program.Emulator.EmulationRunning)
-                MessageBox.Show("Emulation halted!");
-
-
-            
-        }
-
-        private void cPUViewToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (CPUV == null)
-            {
-                CPUV = new sharpGB.Forms.CPUView();
-                CPUV.Icon = Icon;
-            }
-            CPUV.UpdateView(ref Program.Emulator);
-            CPUV.Show();
-        }
-
         private void romHexViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (HexV == null)
@@ -97,22 +70,40 @@ namespace sharpGB
             HexV.Show();
         }
 
-        private void RunButton_Click(object sender, EventArgs e)
+        private void RunStepsButton_Click(object sender, EventArgs e)
         {
             Program.Emulator.EmulateSteps( Int32.Parse(this.RunBox.Text));
+            Program.Emulator.ShowError();
+            UpdateInfoBox();
 
-            if (CPUV != null) CPUV.UpdateView(ref Program.Emulator);
-
-            if (!Program.Emulator.EmulationRunning)
-                MessageBox.Show("Emulation halted!");
         }
 
-        private void StopButton_Click(object sender, EventArgs e)
+
+        private void UpdateInfoBox()
         {
-            Program.Emulator.EmulationRunning = false;
+            InfoBox.Clear();
+            InfoBox.AppendText("A = 0x" + Program.Emulator.Processor.A.ToString("X2") + "\n");
+            InfoBox.AppendText("B = 0x" + Program.Emulator.Processor.B.ToString("X2") + "\n");
+            InfoBox.AppendText("C = 0x" + Program.Emulator.Processor.C.ToString("X2") + "\n");
+            InfoBox.AppendText("D = 0x" + Program.Emulator.Processor.D.ToString("X2") + "\n");
+            InfoBox.AppendText("E = 0x" + Program.Emulator.Processor.E.ToString("X2") + "\n");
+            InfoBox.AppendText("H = 0x" + Program.Emulator.Processor.H.ToString("X2") + "\n");
+            InfoBox.AppendText("L = 0x" + Program.Emulator.Processor.L.ToString("X2") + "\n");
+            InfoBox.AppendText("F = 0x" + Program.Emulator.Processor.L.ToString("X2") + " (" + 
+                                Program.Emulator.Processor.ZeroFlag.ToString() + " " +
+                                Program.Emulator.Processor.SubtractFlag.ToString() + " " +
+                                Program.Emulator.Processor.HalfCarryFlag.ToString() + " " +
+                                Program.Emulator.Processor.CarryFlag.ToString() + ")" + "\n");
+
+            InfoBox.AppendText("OP = " + Program.Emulator.NextOPcode.ToString("X2") + "\t" + 
+                                Program.Emulator.Disassembler.DisassembleMemoryAddress(
+                                ref Program.Emulator.Memory, Program.Emulator.Processor.PC) + "\n");
+
+            InfoBox.AppendText("IME = " + Program.Emulator.Processor.IME + "\n");
+
+
+
         }
-
-
 
 
 
