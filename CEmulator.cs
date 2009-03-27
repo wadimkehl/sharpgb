@@ -519,7 +519,7 @@ namespace sharpGB
                 case 0xEA:  // (nn) <- A 
                     word = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
                     Memory.writeByte(word, Processor.A);
-                    Processor.PC++;
+                    Processor.PC += 3;
                     cycles = 16;
                     break;
                 case 0xE0:  // (0xFF00+ n immediate) <- A  /* SIGNED/UNSIGNED byte? */
