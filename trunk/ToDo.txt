@@ -1,0 +1,17 @@
+﻿
+
+- Checken ob die relativen Sprünge so richtig sind (beim CEmu und CDis)
+Gelöst mit +2 jeweils???
+
+
+- Loads beeinflussen CPU Flags?
+- Arithmetische Operationen haben keine Carry-Berechnung...
+- Allgemein fehlen bei manchen Operationen Flag-Angaben
+
+CB C7	set 0, a
+CB CF	set 1, a
+CB FF	set 7, a
+CB EE	set 5,(hl)
+
+CB 47	bit 0,a
+CB 5F	bit 3,a
