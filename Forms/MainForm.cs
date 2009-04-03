@@ -164,7 +164,7 @@ namespace sharpGB
             InfoBox.AppendText("-----------------------------\n");
             InfoBox.AppendText("PC: 0x" + Program.Emulator.Processor.PC.ToString("X4") + "  ");
             InfoBox.AppendText("SP: 0x" + Program.Emulator.Processor.SP.ToString("X4") + "\n");
-            InfoBox.AppendText("OP: " + Program.Emulator.NextOPcode.ToString("X2") + "    " +
+            InfoBox.AppendText("OP: " + Program.Emulator.CurrentOPcode.ToString("X2") + "    " +
                                 Program.Emulator.Disassembler.DisassembleMemoryAddress(
                                 ref Program.Emulator.Memory, Program.Emulator.Processor.PC) + "\n");
             InfoBox.AppendText("-----------------------------\n");

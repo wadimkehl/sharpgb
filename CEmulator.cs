@@ -41,7 +41,7 @@ namespace sharpGB
         public bool UnknownOPcode;              // True if OPcode not implemented
         public bool UnknownOperand;             // True if OPcode has unexpected operand
         public bool BreakPointReached;          // True if PC stands at a breakpoint
-        public byte CurrentOPcode, NextOPcode;  // current and next OPcode to execute
+        public byte CurrentOPcode;              // current OPcode to execute
         public List<int> BreakPoints;           // List of addresses the emulator is to stop
 
 
@@ -114,7 +114,6 @@ namespace sharpGB
         {
             // Standard values
             CurrentOPcode = 0x00;
-            NextOPcode = 0x00;
             ClockCyclesElapsed = 0;
             LYCounter = 0;
             MachineCyclesElapsed = 0;
@@ -199,25 +198,28 @@ namespace sharpGB
                 Processor.IME = false;
             }
 
-            // Current OPcode is NextOPCode from last turn
-            CurrentOPcode = NextOPcode;
+            // Fetch current OPcode
+            CurrentOPcode = Memory.Data[Processor.PC];
 
-            // Run the operation and save clock cycle of OPcode
+            // Check if the PC position is a breakpoint
+            if (BreakPoints.Contains(Processor.PC))
+            {
+                BreakPointReached = true;
+                EmulationRunning = false;  
+                return;
+            }
+
+            // Else run the operation and save clock cycle of OPcode
             LastInstructionClockCycle = DecodeAndExecute(CurrentOPcode);
 
-            // Check if the new PC position is a breakpoint
-            if (BreakPoints.Contains(Processor.PC))
-                BreakPointReached = true;
-
             // Check if there is a reason to halt the emulation
-            if (UnknownOPcode || UnknownOperand || !EmulationRunning || BreakPointReached)
+            if (UnknownOPcode || UnknownOperand || !EmulationRunning)
             {
                 EmulationRunning = false;   // Stop emulation
                 return;
             }
 
-            // Fetch next instruction at PC and increment cycle counters
-            NextOPcode = Memory.Data[Processor.PC];
+            // Increment cycle counters
             ClockCyclesElapsed += LastInstructionClockCycle;
             LYCounter += LastInstructionClockCycle;
             MachineCyclesElapsed++;
