@@ -490,8 +490,8 @@ namespace sharpGB
                     break;
                 case 0xF0:  // A <- (0xFF00+ n immediate)
                     temp = 0xFF00 + Memory.Data[address + 1];
-                    if (temp > 0xFF4B) text = "LD A,(0x" + temp.ToString("X2") + ")";        // RAM read
-                    else if (temp == 0xFFFF) text = "LD A,IE";
+                    if (temp == 0xFFFF) text = "LD A,IE";
+                    else if (temp > 0xFF4B) text = "LD A,(0x" + temp.ToString("X2") + ")";        // RAM read
                     else text = "LD A," + Enum.GetName(typeof(CMemory.HardwareRegisters), temp); // Give I/O register name
                     break;
 
@@ -537,8 +537,8 @@ namespace sharpGB
                     break;
                 case 0xE0:  // (0xFF00+ n immediate) <- A  
                     temp = 0xFF00 + Memory.Data[address + 1];
-                    if (temp > 0xFF4B) text = "LD (0x" + temp.ToString("X2") + "),A";        // RAM write
-                    else if (temp == 0xFFFF) text = "LD IE,A";
+                    if (temp == 0xFFFF) text = "LD IE,A";
+                    else if (temp > 0xFF4B) text = "LD (0x" + temp.ToString("X2") + "),A";        // RAM write
                     else text = "LD " + Enum.GetName(typeof(CMemory.HardwareRegisters), temp) + ",A"; // Give I/O register name
                     break;
                 case 0x08:  // (nn) <- SP
