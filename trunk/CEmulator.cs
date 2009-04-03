@@ -42,6 +42,7 @@ namespace sharpGB
         public bool UnknownOperand;             // True if OPcode has unexpected operand
         public bool BreakPointReached;          // True if PC stands at a breakpoint
         public byte CurrentOPcode;              // current OPcode to execute
+        public int LastBreakPoint;              // The last address the emulator breaked at
         public List<int> BreakPoints;           // List of addresses the emulator is to stop
 
 
@@ -117,6 +118,7 @@ namespace sharpGB
             ClockCyclesElapsed = 0;
             LYCounter = 0;
             MachineCyclesElapsed = 0;
+            LastBreakPoint = -1;
             BreakPoints.Clear();
             BreakPointReached = false;
             this.EmulationRunning = true;
@@ -201,10 +203,11 @@ namespace sharpGB
             // Fetch current OPcode
             CurrentOPcode = Memory.Data[Processor.PC];
 
-            // Check if the PC position is a breakpoint
-            if (BreakPoints.Contains(Processor.PC))
+            // Check if the PC position is a breakpoint and that the last breakpoint is ignored
+            if (BreakPoints.Contains(Processor.PC) && (LastBreakPoint != Processor.PC))
             {
                 BreakPointReached = true;
+                LastBreakPoint = Processor.PC;
                 EmulationRunning = false;  
                 return;
             }
