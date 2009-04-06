@@ -197,7 +197,7 @@ namespace sharpGB
             else if (Processor.EIsignaled == 2)
             {
                 Processor.EIsignaled = 0;
-                Processor.IME = false;
+                Processor.IME = true;
             }
 
             // Fetch current OPcode
@@ -806,52 +806,52 @@ namespace sharpGB
                 // STACK OPS
                     // PUSH
                 case 0xF5:  // PUSH AF
-                    StackPush(Processor.F);
-                    StackPush(Processor.A);
+                    op_push(Processor.F);
+                    op_push(Processor.A);
                     Processor.PC++;
                     cycles = 16;
                     break;
                 case 0xC5:  // PUSH BC
-                    StackPush(Processor.C);
-                    StackPush(Processor.B);
+                    op_push(Processor.C);
+                    op_push(Processor.B);
                     Processor.PC++;
                     cycles = 16;
                     break;
                 case 0xD5:  // PUSH DE
-                    StackPush(Processor.E);
-                    StackPush(Processor.D);
+                    op_push(Processor.E);
+                    op_push(Processor.D);
                     Processor.PC++;
                     cycles = 16;
                     break;
                 case 0xE5:  // PUSH HL
-                    StackPush(Processor.L);
-                    StackPush(Processor.H);
+                    op_push(Processor.L);
+                    op_push(Processor.H);
                     Processor.PC++;
                     cycles = 16;
                     break;
 
                     // POP
                 case 0xF1:  // POP AF
-                    Processor.A = StackPop();
-                    Processor.F = StackPop();
+                    Processor.A = op_pop();
+                    Processor.F = op_pop();
                     Processor.PC++;
                     cycles = 12;
                     break;
                 case 0xC1:  // POP BC
-                    Processor.B = StackPop();
-                    Processor.C = StackPop();
+                    Processor.B = op_pop();
+                    Processor.C = op_pop();
                     Processor.PC++;
                     cycles = 12;
                     break;
                 case 0xD1:  // POP DE
-                    Processor.D = StackPop();
-                    Processor.E = StackPop();
+                    Processor.D = op_pop();
+                    Processor.E = op_pop();
                     Processor.PC++;
                     cycles = 12;
                     break;
                 case 0xE1:  // POP HL
-                    Processor.H = StackPop();
-                    Processor.L = StackPop();
+                    Processor.H = op_pop();
+                    Processor.L = op_pop();
                     Processor.PC++;
                     cycles = 12;
                     break;
@@ -1544,38 +1544,30 @@ namespace sharpGB
                 #region /* Jump instructions */
                 // absolute jumps
                 case 0xC3:  // Unconditional + 2B immediate operands
-                    Processor.PC = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
+                    op_jmpfar();
                     cycles = 12;
                     break;
 
                 case 0xC2:  // Conditional NZ + 2B immediate operands
-                    if (Processor.ZeroFlag == 0) 
-                        Processor.PC = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
+                    if (Processor.ZeroFlag == 0) op_jmpfar();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xCA:  // Conditional Z + 2B immediate operands
-                    if (Processor.ZeroFlag != 0)
-                        Processor.PC = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
+                    if (Processor.ZeroFlag != 0) op_jmpfar();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xD2:  // Conditional NC + 2B immediate operands
-                    if (Processor.CarryFlag == 0)
-                        Processor.PC = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
+                    if (Processor.CarryFlag == 0) op_jmpfar();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xDA:  // Conditional C + 2B immediate operands
-                    if (Processor.CarryFlag != 0)
-                        Processor.PC = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
+                    if (Processor.CarryFlag != 0) op_jmpfar();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xE9:  // Unconditional jump to HL
                     Processor.PC = Processor.HL;
                     cycles = 4;
@@ -1583,151 +1575,117 @@ namespace sharpGB
 
                 // relative jumps
                 case 0x18:  // Unconditional + relative byte
-                    Processor.PC = (ushort)(Processor.PC + (sbyte)Memory.Data[Processor.PC + 1]+2);
+                    op_jmpnear();
                     cycles = 8;
                     break;
-
                 case 0x20:  // Conditional NZ + relative byte
-                    if (Processor.ZeroFlag == 0) 
-                        Processor.PC = (ushort) (Processor.PC + (sbyte) Memory.Data[Processor.PC + 1]+2);
+                    if (Processor.ZeroFlag == 0) op_jmpnear();
                     else Processor.PC += 2;
                     cycles = 8;
                     break;
-
                 case 0x28:  // Conditional Z + relative byte
-                    if (Processor.ZeroFlag != 0)
-                        Processor.PC = (ushort)(Processor.PC + (sbyte)Memory.Data[Processor.PC + 1]+2);
+                    if (Processor.ZeroFlag != 0) op_jmpnear();
                     else Processor.PC += 2;
                     cycles = 8;
                     break;
-
                 case 0x30:  // Conditional NC + relative byte
-                    if (Processor.CarryFlag == 0)
-                        Processor.PC = (ushort)(Processor.PC + (sbyte)Memory.Data[Processor.PC + 1]+2);
+                    if (Processor.CarryFlag == 0) op_jmpnear();
                     else Processor.PC += 2;
                     cycles = 8;
                     break;
-
                 case 0x38:  // Conditional C + relative byte
-                    if (Processor.CarryFlag != 0)
-                        Processor.PC = (ushort)(Processor.PC + (sbyte)Memory.Data[Processor.PC + 1]+2);
+                    if (Processor.CarryFlag != 0) op_jmpnear();
                     else Processor.PC += 2;
                     cycles = 8;
                     break;
 
                 // calls
                 case 0xCD:  // unconditional 
-                    Call();
+                    op_call();
                     cycles = 12;
                     break;
-
                 case 0xC4:  // Conditional NZ 
-                    if (Processor.ZeroFlag == 0)
-                        Call();
+                    if (Processor.ZeroFlag == 0) op_call();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xCC:  // Conditional Z 
-                    if (Processor.ZeroFlag != 0)
-                        Call();
+                    if (Processor.ZeroFlag != 0) op_call();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xD4:  // Conditional NC
-                    if (Processor.CarryFlag == 0)
-                        Call();
+                    if (Processor.CarryFlag == 0) op_call();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
-
                 case 0xDC:  // Conditional C 
-                    if (Processor.CarryFlag != 0)
-                        Call();
+                    if (Processor.CarryFlag != 0) op_call();
                     else Processor.PC += 3;
                     cycles = 12;
                     break;
 
                 // resets
                 case 0xC7:
-                    Reset(0x00);
+                    op_reset(0x00);
                     cycles = 32;
                     break;
                 case 0xCF:
-                    Reset(0x08);
+                    op_reset(0x08);
                     cycles = 32;
                     break;
                 case 0xD7:
-                    Reset(0x10);
+                    op_reset(0x10);
                     cycles = 32;
                     break;
                 case 0xDF:
-                    Reset(0x18);
+                    op_reset(0x18);
                     cycles = 32;
                     break;
                 case 0xE7:
-                    Reset(0x20);
+                    op_reset(0x20);
                     cycles = 32;
                     break;
                 case 0xEF:
-                    Reset(0x28);
+                    op_reset(0x28);
                     cycles = 32;
                     break;
                 case 0xF7:
-                    Reset(0x30);
+                    op_reset(0x30);
                     cycles = 32;
                     break;
                 case 0xFF:
-                    Reset(0x38);
+                    op_reset(0x38);
                     cycles = 32;
                     break;
 
                 // returns
                 case 0xC9:  // unconditional
-                    word = (ushort)(StackPop() << 8);    // Pop higher byte of return address
-                    Processor.PC = (ushort) (word + StackPop()); // Pop lower and combine
+                    op_return();
                     cycles = 8;
                     break;
                 case 0xD9:  // unconditional plus enable interrupts (RETI)
-                    word = (ushort)(StackPop() << 8);
-                    Processor.PC = (ushort)(word + StackPop());
+                    op_return();
                     Processor.EIsignaled = 1;
                     cycles = 8;
                     break;
                 case 0xC0:  // Conditional NZ 
-                    if (Processor.ZeroFlag == 0)
-                    {
-                        word = (ushort)(StackPop() << 8);
-                        Processor.PC = (ushort)(word + StackPop());
-                    }
+                    if (Processor.ZeroFlag == 0) op_return();
                     else Processor.PC++;
                     cycles = 8;
                     break;
                 case 0xC8:  // Conditional Z 
-                    if (Processor.ZeroFlag != 0)
-                    {
-                        word = (ushort)(StackPop() << 8);
-                        Processor.PC = (ushort)(word + StackPop());
-                    }
+                    if (Processor.ZeroFlag != 0) op_return();
                     else Processor.PC++;
                     cycles = 8;
                     break;
                 case 0xD0:  // Conditional NC
-                    if (Processor.CarryFlag == 0)
-                    {
-                        word = (ushort)(StackPop() << 8);
-                        Processor.PC = (ushort)(word + StackPop());
-                    }
+                    if (Processor.CarryFlag == 0) op_return();
                     else Processor.PC++;
                     cycles = 8;
                     break;
                 case 0xD8:  // Conditional C 
-                    if (Processor.CarryFlag != 0)
-                    {
-                        word = (ushort)(StackPop() << 8);
-                        Processor.PC = (ushort)(word + StackPop());
-                    }
+                    if (Processor.CarryFlag != 0) op_return();
                     else Processor.PC++;
                     cycles = 8;
                     break;
@@ -1945,46 +1903,41 @@ namespace sharpGB
                     // check the operand to identify real operation
                     switch (Memory.Data[Processor.PC+1])
                     {
+                        // SWAPS
                         case 0x37:  // SWAP A
-                            Processor.A = (byte) ((Processor.A << 2) | (Processor.A >> 2));
-                            Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.A = op_swap(Processor.A);
                             cycles = 8;
                             break;
                         case 0x30:  // SWAP B
-                            Processor.B = (byte)((Processor.B << 2) | (Processor.B >> 2));
-                            Processor.SetFlags((Processor.B == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.B = op_swap(Processor.B);
                             cycles = 8;
                             break;
                         case 0x31:  // SWAP C
-                            Processor.C = (byte)((Processor.C << 2) | (Processor.C >> 2));
-                            Processor.SetFlags((Processor.C == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.C = op_swap(Processor.C);
                             cycles = 8;
                             break;
                         case 0x32:  // SWAP D
-                            Processor.D = (byte)((Processor.D << 2) | (Processor.D >> 2));
-                            Processor.SetFlags((Processor.D == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.D = op_swap(Processor.D);
                             cycles = 8;
                             break;
                         case 0x33:  // SWAP E
-                            Processor.E = (byte)((Processor.E << 2) | (Processor.E >> 2));
-                            Processor.SetFlags((Processor.E == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.E = op_swap(Processor.E);
                             cycles = 8;
                             break;
                         case 0x34:  // SWAP H
-                            Processor.H = (byte)((Processor.H << 2) | (Processor.H >> 2));
-                            Processor.SetFlags((Processor.H == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.H = op_swap(Processor.H);
                             cycles = 8;
                             break;
                         case 0x35:  // SWAP L
-                            Processor.L = (byte)((Processor.L << 2) | (Processor.L >> 2));
-                            Processor.SetFlags((Processor.L == 0) ? 1 : 0, 0, 0, 0);
+                            Processor.L = op_swap(Processor.L);
                             cycles = 8;
                             break;
                         case 0x36:  // SWAP (HL)
-                            value = Memory.readByte(Processor.HL);
-                            Memory.writeByte(Processor.HL, (byte) ((value << 2) | (value >> 2)));
+                            value = op_swap(Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
                             cycles = 16;
                             break;
+                        // ROATIONS
                         case 0x07:  // Rotate A left
                             value = (byte)((Processor.A & 128) >> 7);    // extract bit 7
                             Processor.A = (byte)((Processor.A << 1) | value);
@@ -2034,6 +1987,9 @@ namespace sharpGB
                             Processor.SetFlags((value2 == 0) ? 1 : 0, 0, 0, value >> 7);
                             cycles = 16;
                             break;
+                        // SETS
+                        case 0xEE:  // Set 5, (HL)
+                            value = Memory.readByte(Processor.HL); 
 
                         default:
                             UnknownOperand = true;
@@ -2119,38 +2075,7 @@ namespace sharpGB
             return cycles;
         }
 
-        // Push a byte onto the stack
-        void StackPush(byte value)
-        {
-            Memory.Data[Processor.SP] = value;
-            Processor.SP--;
-        }
 
-        // Get a byte from the stack
-        byte StackPop()
-        {
-            Processor.SP++;
-            return Memory.Data[Processor.SP];
-        }
-
-        // Do a call (CALL + 2B immediate)
-        void Call()
-        {
-            ushort address = (ushort)(Processor.PC + 3);  // we need to remember next instruction
-            StackPush((byte)address);           // push lower byte of next instruction address
-            StackPush((byte)(address >> 8));    // push higher byte of next instruction address  
-            Processor.PC = (ushort)((Memory.Data[Processor.PC + 2] << 8) |
-                                      Memory.Data[Processor.PC + 1]); // jump to subroutine
-        }
-
-        // Do a reset
-        void Reset(ushort to)
-        {
-            ushort address = (Processor.PC);    // we need to remember this! instruction
-            StackPush((byte)address);           // push lower byte of instruction address
-            StackPush((byte)(address >> 8));    // push higher byte of instruction address  
-            Processor.PC = to;                  // Jump to reset routine
-        }
 
         // Raise an interrupt
         void RaiseIRQ(IRQType type)
@@ -2195,7 +2120,7 @@ namespace sharpGB
             {
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFE;
-                Reset(0x0040);
+                op_reset(0x0040);
                 ClockCyclesElapsed += 12; // correct cycles?
                 LYCounter += 12;
                 MachineCyclesElapsed++;
@@ -2207,7 +2132,7 @@ namespace sharpGB
             {
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFD;
-                Reset(0x0048);
+                op_reset(0x0048);
                 ClockCyclesElapsed += 12; // correct cycles?
                 LYCounter += 12;
                 MachineCyclesElapsed++;
@@ -2218,7 +2143,7 @@ namespace sharpGB
             {
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFB;
-                Reset(0x0050);
+                op_reset(0x0050);
                 ClockCyclesElapsed += 12; // correct cycles?
                 LYCounter += 12;
                 MachineCyclesElapsed++;
@@ -2229,7 +2154,7 @@ namespace sharpGB
             {
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xF7;
-                Reset(0x0058);
+                op_reset(0x0058);
                 ClockCyclesElapsed += 12; // correct cycles?
                 LYCounter += 12;
                 MachineCyclesElapsed++;
@@ -2240,11 +2165,60 @@ namespace sharpGB
             {
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xEF;
-                Reset(0x0060);
+                op_reset(0x0060);
                 ClockCyclesElapsed += 12; // correct cycles?
                 LYCounter += 12;
                 MachineCyclesElapsed++;
             } 
+        }
+
+
+        // These functions are "high-level" gbz80 functions
+
+        byte op_swap(byte value)    // Swaps byte nibbles and sets flag register
+        {
+            byte b = (byte)((value << 4) | (value >> 4));
+            Processor.SetFlags((value == 0) ? 1 : 0, 0, 0, 0);
+            return b;
+        }
+        void op_push(byte value)    // Push a byte onto the stack
+        {
+            Memory.Data[Processor.SP] = value;
+            Processor.SP--;
+        }
+        byte op_pop()               // Get a byte from the stack
+        {
+            Processor.SP++;
+            return Memory.Data[Processor.SP];
+        }
+        void op_jmpfar()            // Jumps to the address the operation operands are pointing to
+        {
+            Processor.PC = (ushort)(Memory.Data[Processor.PC + 2] << 8 | Memory.Data[Processor.PC + 1]);
+        }
+        void op_jmpnear()           // Jumps to PC + signed operand byte
+        {
+            Processor.PC = (ushort)(Processor.PC + (sbyte)Memory.Data[Processor.PC + 1] + 2);
+        }
+        void op_call()              // Do a call (CALL + 2B immediate)
+        {
+            ushort address = (ushort)(Processor.PC + 3);  // we need to remember next instruction
+            op_push((byte)address);           // push lower byte of next instruction address
+            op_push((byte)(address >> 8));    // push higher byte of next instruction address  
+            Processor.PC = (ushort)((Memory.Data[Processor.PC + 2] << 8) |
+                                      Memory.Data[Processor.PC + 1]); // jump to subroutine
+        }
+        void op_return()            // Returns to an address retrieved from stack
+        {
+            byte word       = (ushort)(op_pop() << 8);    // Pop higher byte of return address
+            Processor.PC    = (ushort)(word + op_pop());  // Pop lower and combine
+
+        }
+        void op_reset(ushort to)    // Do a reset
+        {
+            ushort address = (Processor.PC);    // we need to remember this! instruction
+            op_push((byte)address);           // push lower byte of instruction address
+            op_push((byte)(address >> 8));    // push higher byte of instruction address  
+            Processor.PC = to;                  // Jump to reset routine
         }
 
 
