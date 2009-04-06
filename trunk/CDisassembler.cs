@@ -431,19 +431,19 @@ namespace sharpGB
                     break;
 
                 case 0x01:  // BC <- immediate  
-                    text = "LD BC,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X2");
+                    text = "LD BC,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X4");
                     break;
 
                 case 0x11:  // DE <- immediate  
-                    text = "LD DE,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X2");
+                    text = "LD DE,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X4");
                     break;
 
                 case 0x21:  // HL <- immediate  
-                    text = "LD HL,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X2");
+                    text = "LD HL,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X4");
                     break;
 
                 case 0x31:  // SP <- immediate
-                    text = "LD SP,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X2");
+                    text = "LD SP,0x" + (Memory.Data[address + 1] + (Memory.Data[address + 2] << 8)).ToString("X4");
                     break;
                 
                 case 0x36:  // (HL) <- immediate  
