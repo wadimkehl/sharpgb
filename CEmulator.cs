@@ -1686,12 +1686,12 @@ namespace sharpGB
                 // returns
                 case 0xC9:  // unconditional
                     word = (ushort)(StackPop() << 8);    // Pop higher byte of return address
-                    Processor.PC += (ushort) (word + StackPop()); // Pop lower and combine
+                    Processor.PC = (ushort) (word + StackPop()); // Pop lower and combine
                     cycles = 8;
                     break;
                 case 0xD9:  // unconditional plus enable interrupts (RETI)
                     word = (ushort)(StackPop() << 8);
-                    Processor.PC += (ushort)(word + StackPop());
+                    Processor.PC = (ushort)(word + StackPop());
                     Processor.EIsignaled = 1;
                     cycles = 8;
                     break;
@@ -1699,7 +1699,7 @@ namespace sharpGB
                     if (Processor.ZeroFlag == 0)
                     {
                         word = (ushort)(StackPop() << 8);
-                        Processor.PC += (ushort)(word + StackPop());
+                        Processor.PC = (ushort)(word + StackPop());
                     }
                     else Processor.PC++;
                     cycles = 8;
@@ -1708,7 +1708,7 @@ namespace sharpGB
                     if (Processor.ZeroFlag != 0)
                     {
                         word = (ushort)(StackPop() << 8);
-                        Processor.PC += (ushort)(word + StackPop());
+                        Processor.PC = (ushort)(word + StackPop());
                     }
                     else Processor.PC++;
                     cycles = 8;
@@ -1717,7 +1717,7 @@ namespace sharpGB
                     if (Processor.CarryFlag == 0)
                     {
                         word = (ushort)(StackPop() << 8);
-                        Processor.PC += (ushort)(word + StackPop());
+                        Processor.PC = (ushort)(word + StackPop());
                     }
                     else Processor.PC++;
                     cycles = 8;
@@ -1726,7 +1726,7 @@ namespace sharpGB
                     if (Processor.CarryFlag != 0)
                     {
                         word = (ushort)(StackPop() << 8);
-                        Processor.PC += (ushort)(word + StackPop());
+                        Processor.PC = (ushort)(word + StackPop());
                     }
                     else Processor.PC++;
                     cycles = 8;
@@ -2122,16 +2122,15 @@ namespace sharpGB
         // Push a byte onto the stack
         void StackPush(byte value)
         {
-            Processor.SP--;
             Memory.Data[Processor.SP] = value;
+            Processor.SP--;
         }
 
         // Get a byte from the stack
         byte StackPop()
         {
-            byte v = Memory.Data[Processor.SP];
             Processor.SP++;
-            return v;
+            return Memory.Data[Processor.SP];
         }
 
         // Do a call (CALL + 2B immediate)
