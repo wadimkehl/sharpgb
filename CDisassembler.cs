@@ -139,6 +139,8 @@ namespace sharpGB
                 case 0x6D:  // L <- L 
                 case 0xF9:  // SP <- HL 
                     return 1;
+                case 0xF8:  // HL <- SP + n
+                    return 2;
 
                 // Stack OPS
                 case 0xF5:  // PUSH AF
@@ -368,7 +370,7 @@ namespace sharpGB
                     return 1;
 
 
-                case 0xCB:  // Swap nibbles + 1B immediate operand
+                case 0xCB:  // CB operations branch
                     return 2;
                 case 0x2F:  // Complement A
                 case 0x3F:  // Complement Carry
@@ -695,6 +697,9 @@ namespace sharpGB
                     break;
                 case 0xF9:  // SP <- HL 
                     text = "LD SP,HL";
+                    break;
+                case 0xF8:  // HL <- SP + signed n 
+                    text = "LD HL,SP+" + ((sbyte)Memory.Data[address+1]).ToString("X2");
                     break;
 
                 // STACK OPS
@@ -1215,6 +1220,231 @@ namespace sharpGB
                         case 0x36:  //SWAP  (HL)
                             text = "SWAP (HL)";
                             break;
+                        case 0x07:  // Rotate A left
+                            text = "RLC A";
+                            break;
+                        case 0x00:  // Rotate B left
+                            text = "RLC B";
+                            break;
+                        case 0x01:  // Rotate C left
+                            text = "RLC C";
+                            break;
+                        case 0x02:  // Rotate D left
+                            text = "RLC D";
+                            break;
+                        case 0x03:  // Rotate E left
+                            text = "RLC E";
+                            break;
+                        case 0x04:  // Rotate H left
+                            text = "RLC H";
+                            break;
+                        case 0x05:  // Rotate L left
+                            text = "RLC L";
+                            break;
+                        case 0x06:  // Rotate (HL) left
+                            text = "RLC (HL)";
+                            break;
+
+                        // SETS
+                        case 0xC7:  // Set 0, A
+                            text = "SET 0,A";
+                            break;
+                        case 0xCF:  // Set 1, A
+                            text = "SET 1,A";
+                            break;
+                        case 0xD7:  // Set 2, A
+                            text = "SET 2,A";
+                            break;
+                        case 0xDF:  // Set 3, A
+                            text = "SET 3,A";
+                            break;
+                        case 0xE7:  // Set 4, A
+                            text = "SET 4,A";
+                            break;
+                        case 0xEF:  // Set 5, A
+                            text = "SET 5,A";
+                            break;
+                        case 0xF7:  // Set 6, A
+                            text = "SET 6,A";
+                            break;
+                        case 0xFF:  // Set 7, A
+                            text = "SET 7,A";
+                            break;
+                        case 0xC0:  // Set 0, B
+                            text = "SET 0,B";
+                            break;
+                        case 0xC8:  // Set 1, B
+                            text = "SET 1,B";
+                            break;
+                        case 0xD0:  // Set 2, B
+                            text = "SET 2,B";
+                            break;
+                        case 0xD8:  // Set 3, B
+                            text = "SET 3,B";
+                            break;
+                        case 0xE0:  // Set 4, B
+                            text = "SET 4,B";
+                            break;
+                        case 0xE8:  // Set 5, B
+                            text = "SET 5,B";
+                            break;
+                        case 0xF0:  // Set 6, B
+                            text = "SET 6,B";
+                            break;
+                        case 0xF8:  // Set 7, B
+                            text = "SET 7,B";
+                            break;
+
+                        case 0xC1:  // Set 0, C
+                            text = "SET 0,C";
+                            break;
+                        case 0xC9:  // Set 1, C
+                            text = "SET 1,C";
+                            break;
+                        case 0xD1:  // Set 2, C
+                            text = "SET 2,C";
+                            break;
+                        case 0xD9:  // Set 3, C
+                            text = "SET 3,C";
+                            break;
+                        case 0xE1:  // Set 4, C
+                            text = "SET 4,C";
+                            break;
+                        case 0xE9:  // Set 5, C
+                            text = "SET 5,C";
+                            break;
+                        case 0xF1:  // Set 6, C
+                            text = "SET 6,C";
+                            break;
+                        case 0xF9:  // Set 7, C
+                            text = "SET 7,C";
+                            break;
+
+                        case 0xC2:  // Set 0, D
+                            text = "SET 0,D";
+                            break;
+                        case 0xCA:  // Set 1, D
+                            text = "SET 1,D";
+                            break;
+                        case 0xD2:  // Set 2, D
+                            text = "SET 2,D";
+                            break;
+                        case 0xDA:  // Set 3, D
+                            text = "SET 3,D";
+                            break;
+                        case 0xE2:  // Set 4, D
+                            text = "SET 4,D";
+                            break;
+                        case 0xEA:  // Set 5, D
+                            text = "SET 5,D";
+                            break;
+                        case 0xF2:  // Set 6, D
+                            text = "SET 6,D";
+                            break;
+                        case 0xFA:  // Set 7, D
+                            text = "SET 7,D";
+                            break;
+
+                        case 0xC3:  // Set 0, E
+                            text = "SET 0,E";
+                            break;
+                        case 0xCB:  // Set 1, E
+                            text = "SET 1,E";
+                            break;
+                        case 0xD3:  // Set 2, E
+                            text = "SET 2,E";
+                            break;
+                        case 0xDB:  // Set 3, E
+                            text = "SET 3,E";
+                            break;
+                        case 0xE3:  // Set 4, E
+                            text = "SET 4,E";
+                            break;
+                        case 0xEB:  // Set 5, E
+                            text = "SET 5,E";
+                            break;
+                        case 0xF3:  // Set 6, E
+                            text = "SET 6,E";
+                            break;
+                        case 0xFB:  // Set 7, E
+                            text = "SET 7,E";
+                            break;
+
+                        case 0xC4:  // Set 0, H
+                            text = "SET 0,H";
+                            break;
+                        case 0xCC:  // Set 1, H
+                            text = "SET 1,H";
+                            break;
+                        case 0xD4:  // Set 2, H
+                            text = "SET 2,H";
+                            break;
+                        case 0xDC:  // Set 3, H
+                            text = "SET 3,H";
+                            break;
+                        case 0xE4:  // Set 4, H
+                            text = "SET 4,H";
+                            break;
+                        case 0xEC:  // Set 5, H
+                            text = "SET 5,H";
+                            break;
+                        case 0xF4:  // Set 6, H
+                            text = "SET 6,H";
+                            break;
+                        case 0xFC:  // Set 7, H
+                            text = "SET 7,H";
+                            break;
+
+                        case 0xC5:  // Set 0, L
+                            text = "SET 0,L";
+                            break;
+                        case 0xCD:  // Set 1, L
+                            text = "SET 1,L";
+                            break;
+                        case 0xD5:  // Set 2, L
+                            text = "SET 2,L";
+                            break;
+                        case 0xDD:  // Set 3, L
+                            text = "SET 3,L";
+                            break;
+                        case 0xE5:  // Set 4, L
+                            text = "SET 4,L";
+                            break;
+                        case 0xED:  // Set 5, L
+                            text = "SET 5,L";
+                            break;
+                        case 0xF5:  // Set 6, L
+                            text = "SET 6,L";
+                            break;
+                        case 0xFD:  // Set 7, L
+                            text = "SET 7,L";
+                            break;
+
+                        case 0xC6:  // Set 0, (HL)
+                            text = "SET 0,(HL)";
+                            break;
+                        case 0xCE:  // Set 1, (HL)
+                            text = "SET 1,(HL)";
+                            break;
+                        case 0xD6:  // Set 2, (HL)
+                            text = "SET 2,(HL)";
+                            break;
+                        case 0xDE:  // Set 3, (HL)
+                            text = "SET 3,(HL)";
+                            break;
+                        case 0xE6:  // Set 4, (HL)
+                            text = "SET 4,(HL)";
+                            break;
+                        case 0xEE:  // Set 5, (HL)
+                            text = "SET 5,(HL)";
+                            break;
+                        case 0xF6:  // Set 6, (HL)
+                            text = "SET 6,(HL)";
+                            break;
+                        case 0xFE:  // Set 7, (HL)
+                            text = "SET 7,(HL)";
+                            break;
+
                         default:
                             text = "CB ?";
                             break;
