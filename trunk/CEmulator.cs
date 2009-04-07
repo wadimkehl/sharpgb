@@ -533,7 +533,7 @@ namespace sharpGB
                     Processor.PC += 2;
                     cycles = 12;
                     break;
-                case 0x32:  // (HL) <- A, HL--      /* FLAGS??? */
+                case 0x32:  // (HL) <- A, HL--    
                     Memory.writeByte(Processor.HL, Processor.A);
                     Processor.HL--;
                     Processor.H = (byte)(Processor.HL >> 8);
@@ -541,7 +541,7 @@ namespace sharpGB
                     Processor.PC++;
                     cycles = 8;
                     break;
-                case 0x22:  // (HL) <- A, HL++      /* FLAGS??? */
+                case 0x22:  // (HL) <- A, HL++     
                     Memory.writeByte(Processor.HL, Processor.A);
                     Processor.HL++;
                     Processor.H = (byte)(Processor.HL >> 8);
@@ -803,6 +803,15 @@ namespace sharpGB
                     cycles = 8;
                     break;
 
+                case 0xF8: // HL <- SP + signed immediate
+                    word = Processor.HL;
+                    Processor.HL = (ushort)(Processor.SP + (sbyte)(Memory.Data[Processor.PC + 1]));
+                    Processor.SetFlags(0, 0, (word & 0x800) - (Processor.HL & 0x800), (word & 0x8000) - (Processor.HL & 0x8000)); 
+                    Processor.PC += 2;
+                    cycles = 12;
+                    break;
+
+
                 // STACK OPS
                     // PUSH
                 case 0xF5:  // PUSH AF
@@ -864,565 +873,319 @@ namespace sharpGB
                 // 8-bit arithmetics
 
                 // ADD
-                case 0x87:  // A = A+A  
-                    Processor.A += Processor.A;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x87: 
+                    op_add(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x80:  // A = A+B  
-                    Processor.A += Processor.B;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x80:  
+                    op_add(Processor.B);       
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x81:  // A = A+C  
-                    Processor.A += Processor.C;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x81:  
+                    op_add(Processor.C);       
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x82:  // A = A+D  
-                    Processor.A += Processor.D;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x82: 
+                    op_add(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x83:  // A = A+E  
-                    Processor.A += Processor.E;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x83:  
+                    op_add(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x84:  // A = A+H  
-                    Processor.A += Processor.H;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x84:   
+                    op_add(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x85:  // A = A+L  
-                    Processor.A += Processor.L;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x85:  
+                    op_add(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x86:  // A = A+(HL)  
-                    Processor.A += Memory.readByte(Processor.HL);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x86:   
+                    op_add(Memory.readByte(Processor.HL));
                     Processor.PC++;
                     cycles = 8;
                     break;
-
-                case 0xC6:  // A = A + immediate  
-                    Processor.A += Memory.Data[Processor.PC+1];
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0xC6:    
+                    op_add(Memory.Data[Processor.PC+1]);
                     Processor.PC += 2;
                     cycles = 8;
                     break;
 
                 // ADC
-                case 0x8F:  // A = A+A+Carry  
-                    Processor.A += (byte)(Processor.A + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x8F:  
+                    op_adc(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x88:  // A = A+B+Carry 
-                    Processor.A += (byte)(Processor.B + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x88:  
+                    op_adc(Processor.B);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x89:  // A = A+C+Carry  
-                    Processor.A += (byte)(Processor.C + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x89:   
+                    op_adc(Processor.C);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x8A:  // A = A+D+Carry  
-                    Processor.A += (byte)(Processor.D + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x8A:   
+                    op_adc(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x8B:  // A = A+E+Carry  
-                    Processor.A += (byte)(Processor.E + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x8B:    
+                    op_adc(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x8C:  // A = A+H+Carry  
-                    Processor.A += (byte)(Processor.H + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x8C:   
+                    op_adc(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x8D:  // A = A+L+Carry  
-                    Processor.A += (byte)(Processor.L + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x8D:   
+                    op_adc(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x8E:  // A = A+(HL)+Carry  
-                    Processor.A += (byte)(Memory.readByte(Processor.HL) + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x8E:  
+                    op_adc(Memory.readByte(Processor.HL));
                     Processor.PC++;
                     cycles = 8;
                     break;
-
-                case 0xCE:  // A = A + immediate + Carry  
-                    Processor.A += (byte)(Memory.Data[Processor.PC + 1] + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0xCE:   
+                    op_add(Memory.Data[Processor.PC + 1]);
                     Processor.PC += 2;
                     cycles = 8;
                     break;
 
                 // SUB
-                case 0x97:  // A = A-A  
-                    Processor.A -= Processor.A;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x97:  
+                    op_sub(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x90:  // A = A-B  
-                    Processor.A -= Processor.B;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x90: 
+                    op_sub(Processor.B);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x91:  // A = A-C  
-                    Processor.A -= Processor.C;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x91:  
+                    op_sub(Processor.C);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x92:  // A = A-D  
-                    Processor.A -= Processor.D;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x92: 
+                    op_sub(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x93:  // A = A-E  
-                    Processor.A -= Processor.E;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x93:  
+                    op_sub(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x94:  // A = A-H  
-                    Processor.A -= Processor.H;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x94: 
+                    op_sub(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x95:  // A = A-L  
-                    Processor.A -= Processor.L;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x95:  
+                    op_sub(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x96:  // A = A-(HL)  
-                    Processor.A -= Memory.readByte(Processor.HL);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x96:  
+                    op_sub(Memory.readByte(Processor.HL));
                     Processor.PC++;
                     cycles = 8;
                     break;
-
-                case 0xD6:  // A = A - immediate  
-                    Processor.A -= Memory.Data[Processor.PC + 1];
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0xD6: 
+                    op_sub(Memory.Data[Processor.PC+1]);
                     Processor.PC += 2;
                     cycles = 8;
                     break;
 
                 // SBC
-                case 0x9F:  // A = A-A+Carry  
-                    Processor.A -= (byte)(Processor.A + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x9F:  
+                    op_sbc(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x98:  // A = A-B+Carry 
-                    Processor.A -= (byte)(Processor.B + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x98:  
+                    op_sbc(Processor.B);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x99:  // A = A-C+Carry  
-                    Processor.A -= (byte)(Processor.C + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x99:  
+                    op_sbc(Processor.C);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x9A:  // A = A-D+Carry  
-                    Processor.A -= (byte)(Processor.D + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x9A:   
+                    op_sbc(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x9B:  // A = A-E+Carry  
-                    Processor.A -= (byte)(Processor.E + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x9B:  
+                    op_sbc(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x9C:  // A = A-H+Carry  
-                    Processor.A -= (byte)(Processor.H + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x9C: 
+                    op_sbc(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x9D:  // A = A-L+Carry  
-                    Processor.A -= (byte)(Processor.L + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x9D:   
+                    op_sbc(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x9E:  // A = A-(HL)+Carry  
-                    Processor.A -= (byte)(Memory.readByte(Processor.HL) + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 3 ???*/
-                    Processor.CarryFlag = 0;        /* carry from bit 7 ???*/
+                case 0x9E:   
+                    op_sbc(Memory.readByte(Processor.HL));
                     Processor.PC++;
                     cycles = 8;
                     break;
+                // sbc + immediate non-existent?
 
-               /* case 0x??:  // A = A - immediate + Carry   // Not existent???
-                    Processor.A -= (byte)(Memory.Data[Processor.PC + 1] + Processor.CarryFlag);
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0;    // carry from bit 3 ???
-                    Processor.CarryFlag = 0;        // carry from bit 7 ???
-                    Processor.PC += 2;
-                    cycles = 8;
-                    break;
-               */
 
                 // INC
-                case 0x3C:  // A++  
-                    Processor.A++;
-                    Processor.ZeroFlag = (uint)((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;   /* carry from bit 3 ???*/
+                case 0x3C:  
+                    Processor.A = op_inc(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x04:  // B++  
-                    Processor.B++;
-                    Processor.ZeroFlag = (uint)((Processor.B == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0; /* carry from bit 3 ???*/
+                case 0x04: 
+                    Processor.B = op_inc(Processor.B);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x0C:  // C++  
-                    Processor.C++;
-                    Processor.ZeroFlag = (uint)((Processor.C == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0; /* carry from bit 3 ???*/
+                case 0x0C:  
+                    Processor.C = op_inc(Processor.C);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x14:  // D++  
-                    Processor.D++;
-                    Processor.ZeroFlag = (uint)((Processor.D == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0; /* carry from bit 3 ???*/
+                case 0x14:  
+                    Processor.D = op_inc(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x1C:  // E++  
-                    Processor.E++;
-                    Processor.ZeroFlag = (uint)((Processor.E == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0; /* carry from bit 3 ???*/
+                case 0x1C:  
+                    Processor.E = op_inc(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x24:  // H++  
-                    Processor.H++;
-                    Processor.ZeroFlag = (uint)((Processor.H == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0; /* carry from bit 3 ???*/
+                case 0x24:   
+                    Processor.H = op_inc(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x2C:  // L++  
-                    Processor.L++;
-                    Processor.ZeroFlag = (uint)((Processor.L == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0; /* carry from bit 3 ???*/
+                case 0x2C:   
+                    Processor.L = op_inc(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x34:  // (HL)++  
+                case 0x34:  
                     value = Memory.readByte(Processor.HL);
-                    value++;
-                    Memory.writeByte(Processor.HL, value);
-                    Processor.ZeroFlag = (uint)((value == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;  /* carry from bit 3 ???*/
+                    Memory.writeByte(Processor.HL,op_inc(value));
                     Processor.PC++;
                     cycles = 12;
                     break;
 
                 // DEC
-                case 0x3D:  // A--  
-                    Processor.A--;
-                    Processor.ZeroFlag = (uint) ((Processor.A == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x3D: 
+                    Processor.A = op_dec(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x05:  // B--  
-                    Processor.B--;
-                    Processor.ZeroFlag = (uint)((Processor.B == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x05:  
+                    Processor.B = op_dec(Processor.B);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x0D:  // C--  
-                    Processor.C--;
-                    Processor.ZeroFlag = (uint)((Processor.C == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x0D:  
+                    Processor.C = op_dec(Processor.C);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x15:  // D--  
-                    Processor.D--;
-                    Processor.ZeroFlag = (uint)((Processor.D == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x15:
+                    Processor.D = op_dec(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x1D:  // E--  
-                    Processor.E--;
-                    Processor.ZeroFlag = (uint)((Processor.E == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x1D:   
+                    Processor.E = op_dec(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x25:  // H--  
-                    Processor.H--;
-                    Processor.ZeroFlag = (uint)((Processor.H == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x25:  
+                    Processor.H = op_dec(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x2D:  // L--  
-                    Processor.L--;
-                    Processor.ZeroFlag = (uint)((Processor.L == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                case 0x2D:  
+                    Processor.L = op_dec(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
-                case 0x35:  // (HL)--  
+                case 0x35: 
                     value = Memory.readByte(Processor.HL);
-                    value--;
-                    Memory.writeByte(Processor.HL, value);
-                    Processor.ZeroFlag = (uint)((value == 0) ? 1 : 0);
-                    Processor.SubtractFlag = 1;
-                    Processor.HalfCarryFlag = 0; /* borrow from bit 4 ???*/
+                    Memory.writeByte(Processor.HL, op_dec(value));
                     Processor.PC++;
                     cycles = 12;
                     break;
 
                 // CMP 
-                case 0xBF:  // A == A 
-                    Processor.SetFlags(1, 1, 0, 0); /* Borrow bit 4 and carry set for no borrow? */
+                case 0xBF:  
+                    op_cmp(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xB8:  // A == B                                       /* same here */
-                    Processor.SetFlags((Processor.A == Processor.B) ? 1 : 0, 1, 0, (Processor.A < Processor.B) ? 1 : 0); 
+                case 0xB8: 
+                    op_cmp(Processor.B); 
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xB9:  // A == C                                       /* same here */
-                    Processor.SetFlags((Processor.A == Processor.C) ? 1 : 0, 1, 0, (Processor.A < Processor.C) ? 1 : 0);
+                case 0xB9:                                     
+                    op_cmp(Processor.C);
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xBA:  // A == D                                       /* same here */
-                    Processor.SetFlags((Processor.A == Processor.D) ? 1 : 0, 1, 0, (Processor.A < Processor.D) ? 1 : 0);
+                case 0xBA:                                   
+                    op_cmp(Processor.D);
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xBB:  // A == E                                       /* same here */
-                    Processor.SetFlags((Processor.A == Processor.E) ? 1 : 0, 1, 0, (Processor.A < Processor.E) ? 1 : 0);
+                case 0xBB:                                      
+                    op_cmp(Processor.E);
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xBC:  // A == H                                       /* same here */
-                    Processor.SetFlags((Processor.A == Processor.H) ? 1 : 0, 1, 0, (Processor.A < Processor.H) ? 1 : 0);
+                case 0xBC:                                     
+                    op_cmp(Processor.H);
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xBD:  // A == L                                       /* same here */
-                    Processor.SetFlags((Processor.A == Processor.L) ? 1 : 0, 1, 0, (Processor.A < Processor.L) ? 1 : 0);
+                case 0xBD:                                     
+                    op_cmp(Processor.L);
                     Processor.PC++;
                     cycles = 4;
                     break;
-                case 0xBE:  // A == (HL)                                    /* same here */
-                    value = Memory.readByte(Processor.HL);
-                    Processor.SetFlags((Processor.A == value) ? 1 : 0, 1, 0, (Processor.A < value) ? 1 : 0);
+                case 0xBE:                                 
+                    op_cmp(Memory.readByte(Processor.HL));
                     Processor.PC++;
                     cycles = 8;
                     break;
-                case 0xFE:  // A == immediate                              /* same here */
-                    value = Memory.Data[Processor.PC + 1];
-                    Processor.SetFlags((Processor.A == value) ? 1 : 0, 1, 0, (Processor.A < value) ? 1 : 0);
+                case 0xFE:  
+                    op_cmp(Memory.Data[Processor.PC + 1]);
                     Processor.PC += 2;
                     cycles = 8;
                     break;
@@ -1430,49 +1193,30 @@ namespace sharpGB
                 // 16-bit arithmetics
 
                 // ADD
-                case 0x09:  // HL += BC                              
-                    Processor.HL += (ushort)(Processor.B << 8 | Processor.C);
-                    Processor.H = (byte)(Processor.HL >> 8);
-                    Processor.L = (byte)Processor.HL;
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 11 */
-                    Processor.CarryFlag = 0;        /* carry from bit 15 */
+                case 0x09:                              
+                    op_add16((ushort)(Processor.B << 8 | Processor.C));
                     Processor.PC++;
                     cycles = 8;
                     break;
-                case 0x19:  // HL += DE                              
-                    Processor.HL += (ushort)(Processor.D << 8 | Processor.E);
-                    Processor.H = (byte)(Processor.HL >> 8);
-                    Processor.L = (byte)Processor.HL;
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 11 */
-                    Processor.CarryFlag = 0;        /* carry from bit 15 */
+                case 0x19:                              
+                    op_add16((ushort)(Processor.D << 8 | Processor.E));
                     Processor.PC++;
                     cycles = 8;
                     break;
-                case 0x29:  // HL += HL                              
-                    Processor.HL += Processor.HL;
-                    Processor.H = (byte)(Processor.HL >> 8);
-                    Processor.L = (byte)Processor.HL;
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 11 */
-                    Processor.CarryFlag = 0;        /* carry from bit 15 */
+                case 0x29:                              
+                    op_add16(Processor.HL);
                     Processor.PC++;
                     cycles = 8;
                     break;
-                case 0x39:  // HL += SP                              
-                    Processor.HL += Processor.SP;
-                    Processor.H = (byte)(Processor.HL >> 8);
-                    Processor.L = (byte)Processor.HL;
-                    Processor.SubtractFlag = 0;
-                    Processor.HalfCarryFlag = 0;    /* carry from bit 11 */
-                    Processor.CarryFlag = 0;        /* carry from bit 15 */
+                case 0x39:
+                    op_add16(Processor.SP);
                     Processor.PC++;
                     cycles = 8;
                     break;
                 case 0xE8:  // SP += signed immediate byte                              
+                    word = Processor.SP;
                     Processor.SP = (ushort) (Processor.SP + ((sbyte)Memory.Data[Processor.PC + 1]));
-                    Processor.SetFlags(0, 0, 0, 0); /* carry bit 11 and 15 */
+                    Processor.SetFlags(0, 0, (word & 0x800) - (Processor.SP & 0x800), (word & 0x8000) - (Processor.SP & 0x8000)); 
                     Processor.PC +=2 ;
                     cycles = 16;
                     break;
@@ -1955,16 +1699,286 @@ namespace sharpGB
                             Memory.writeByte(Processor.HL,value);
                             cycles = 16;
                             break;
-                        /*
+                        
                         // SETS
-                            case 0xEE:  // Set 5, (HL)
+                        case 0xC7:  // Set 0, A
+                            Processor.A = op_setbit(0, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xCF:  // Set 1, A
+                            Processor.A = op_setbit(1, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xD7:  // Set 2, A
+                            Processor.A = op_setbit(2, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xDF:  // Set 3, A
+                            Processor.A = op_setbit(3, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xE7:  // Set 4, A
+                            Processor.A = op_setbit(4, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xEF:  // Set 5, A
+                            Processor.A = op_setbit(5, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xF7:  // Set 6, A
+                            Processor.A = op_setbit(6, Processor.A);
+                            cycles = 8;
+                            break;
+                        case 0xFF:  // Set 7, A
+                            Processor.A = op_setbit(7, Processor.A);
+                            cycles = 8;
+                            break;
+
+                        case 0xC0:  // Set 0, B
+                            Processor.B = op_setbit(0, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xC8:  // Set 1, B
+                            Processor.B = op_setbit(1, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xD0:  // Set 2, B
+                            Processor.B = op_setbit(2, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xD8:  // Set 3, B
+                            Processor.B = op_setbit(3, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xE0:  // Set 4, B
+                            Processor.B = op_setbit(4, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xE8:  // Set 5, B
+                            Processor.B = op_setbit(5, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xF0:  // Set 6, B
+                            Processor.B = op_setbit(6, Processor.B);
+                            cycles = 8;
+                            break;
+                        case 0xF8:  // Set 7, B
+                            Processor.B = op_setbit(7, Processor.B);
+                            cycles = 8;
+                            break;
+
+                        case 0xC1:  // Set 0, C
+                            Processor.C = op_setbit(0, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xC9:  // Set 1, C
+                            Processor.C = op_setbit(1, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xD1:  // Set 2, C
+                            Processor.C = op_setbit(2, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xD9:  // Set 3, C
+                            Processor.C = op_setbit(3, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xE1:  // Set 4, C
+                            Processor.C = op_setbit(4, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xE9:  // Set 5, C
+                            Processor.C = op_setbit(5, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xF1:  // Set 6, C
+                            Processor.C = op_setbit(6, Processor.C);
+                            cycles = 8;
+                            break;
+                        case 0xF9:  // Set 7, C
+                            Processor.C = op_setbit(7, Processor.C);
+                            cycles = 8;
+                            break;
+
+                        case 0xC2:  // Set 0, D
+                            Processor.D = op_setbit(0, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xCA:  // Set 1, D
+                            Processor.D = op_setbit(1, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xD2:  // Set 2, D
+                            Processor.D = op_setbit(2, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xDA:  // Set 3, D
+                            Processor.D = op_setbit(3, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xE2:  // Set 4, D
+                            Processor.D = op_setbit(4, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xEA:  // Set 5, D
+                            Processor.D = op_setbit(5, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xF2:  // Set 6, D
+                            Processor.D = op_setbit(6, Processor.D);
+                            cycles = 8;
+                            break;
+                        case 0xFA:  // Set 7, D
+                            Processor.D = op_setbit(7, Processor.D);
+                            cycles = 8;
+                            break;
+
+                        case 0xC3:  // Set 0, E
+                            Processor.E = op_setbit(0, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xCB:  // Set 1, E
+                            Processor.E = op_setbit(1, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xD3:  // Set 2, E
+                            Processor.E = op_setbit(2, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xDB:  // Set 3, E
+                            Processor.E = op_setbit(3, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xE3:  // Set 4, E
+                            Processor.E = op_setbit(4, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xEB:  // Set 5, E
+                            Processor.E = op_setbit(5, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xF3:  // Set 6, E
+                            Processor.E = op_setbit(6, Processor.E);
+                            cycles = 8;
+                            break;
+                        case 0xFB:  // Set 7, E
+                            Processor.E = op_setbit(7, Processor.E);
+                            cycles = 8;
+                            break;
+
+                        case 0xC4:  // Set 0, H
+                            Processor.H = op_setbit(0, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xCC:  // Set 1, H
+                            Processor.H = op_setbit(1, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xD4:  // Set 2, H
+                            Processor.H = op_setbit(2, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xDC:  // Set 3, H
+                            Processor.H = op_setbit(3, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xE4:  // Set 4, H
+                            Processor.H = op_setbit(4, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xEC:  // Set 5, H
+                            Processor.H = op_setbit(5, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xF4:  // Set 6, H
+                            Processor.H = op_setbit(6, Processor.H);
+                            cycles = 8;
+                            break;
+                        case 0xFC:  // Set 7, H
+                            Processor.H = op_setbit(7, Processor.H);
+                            cycles = 8;
+                            break;
+
+                        case 0xC5:  // Set 0, L
+                            Processor.L = op_setbit(0, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xCD:  // Set 1, L
+                            Processor.L = op_setbit(1, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xD5:  // Set 2, L
+                            Processor.L = op_setbit(2, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xDD:  // Set 3, L
+                            Processor.L = op_setbit(3, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xE5:  // Set 4, L
+                            Processor.L = op_setbit(4, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xED:  // Set 5, L
+                            Processor.L = op_setbit(5, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xF5:  // Set 6, L
+                            Processor.L = op_setbit(6, Processor.L);
+                            cycles = 8;
+                            break;
+                        case 0xFD:  // Set 7, L
+                            Processor.L = op_setbit(7, Processor.L);
+                            cycles = 8;
+                            break;
+
+                        case 0xC6:  // Set 0, (HL)
+                            value = op_setbit(0, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xCE:  // Set 1, (HL)
+                            value = op_setbit(1, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xD6:  // Set 2, (HL)
+                            value = op_setbit(2, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xDE:  // Set 3, (HL)
+                            value = op_setbit(3, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xE6:  // Set 4, (HL)
+                            value = op_setbit(4, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xEE:  // Set 5, (HL)
+                            value = op_setbit(5, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xF6:  // Set 6, (HL)
+                            value = op_setbit(6, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
+                        case 0xFE:  // Set 7, (HL)
+                            value = op_setbit(7, Memory.readByte(Processor.HL));
+                            Memory.writeByte(Processor.HL, value);
+                            cycles = 16;
+                            break;
                             
 
 
                         // RESETS
                           
                         // BIT
-                        */    
+                            
 
                         default:
                             UnknownOperand = true;
@@ -2150,6 +2164,60 @@ namespace sharpGB
 
         // These functions are "high-level" gbz80 functions
 
+        void op_add(byte value)    // Add value to register A
+        {
+            byte old = Processor.A;
+            Processor.A += value;
+            Processor.SetFlags((Processor.A == 0) ? 1 : 0,0,(old & 0x8) - (Processor.A & 0x8),(old & 0x08) - (Processor.A & 0x08));     
+        }
+        void op_adc(byte value)    // Add value to register A + carry
+        {
+            byte old = Processor.A;
+            Processor.A += (byte) (value + Processor.CarryFlag);
+            Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, (old & 0x8) - (Processor.A & 0x8), (old & 0x08) - (Processor.A & 0x08)); 
+        }
+        void op_sub(byte value)    // Substract value from A
+        {
+            byte old = Processor.A;
+            Processor.A -= value;
+            Processor.SetFlags((Processor.A == 0) ? 1 : 0,1, (old & 0x10) - (Processor.A & 0x10),(old & 0x80) - (Processor.A & 0x80));
+        }
+        void op_sbc(byte value)    // Substract value + carry from A
+        {
+            byte old = Processor.A;
+            Processor.A -= (byte) (value + Processor.CarryFlag);
+            Processor.SetFlags((Processor.A == 0) ? 1 : 0, 1, (old & 0x10) - (Processor.A & 0x10), (old & 0x80) - (Processor.A & 0x80));
+        }
+        byte op_inc(byte value)    // Increments a value
+        {
+            byte old = value;
+            value++;
+            Processor.SetFlags((value == 0) ? 1 : 0, 0, (old & 0x8) - (value & 0x8), (int)Processor.CarryFlag);
+            return value;
+        }
+        byte op_dec(byte value)    // Decrements a value
+        {
+            byte old = value;
+            value--;
+            Processor.SetFlags((value == 0) ? 1 : 1, 0, (old & 0x10) - (value & 0x10), (int)Processor.CarryFlag);
+            return value;
+        }
+        void op_cmp(byte value)    // Compare a value with A
+        {
+            /* Borrow bit 4 and carry set for no borrow? */
+            Processor.SetFlags((Processor.A == value) ? 1 : 0, 1,
+                               ((Processor.A - value )&0x10) == 0 ? 1 : 0, 
+                                (Processor.A < value) ? 1 : 0);
+        }
+        void op_add16(ushort value)// Add short value to HL
+        {
+            ushort old = Processor.HL;
+            Processor.HL += value;
+            Processor.H = (byte)(Processor.HL >> 8);
+            Processor.L = (byte)Processor.HL;
+            Processor.SetFlags((Processor.HL == 0) ? 1 : 0, 0, (old & 0x800) - (Processor.HL & 0x800), (old & 0x8000) - (Processor.HL & 0x8000)); 
+        }
+
         byte op_rlc(byte value)    // Rotate left, old bit 7 in carry flag
         {
             byte bit = (byte)((value & 128) >> 7);    // extract bit 7
@@ -2178,6 +2246,12 @@ namespace sharpGB
             Processor.SetFlags((ret == 0) ? 1 : 0, 0, 0, bit);
             return ret;
         }
+        byte op_swap(byte value)    // Swaps byte nibbles and sets flag register
+        {
+            byte b = (byte)((value << 4) | (value >> 4));
+            Processor.SetFlags((value == 0) ? 1 : 0, 0, 0, 0);
+            return b;
+        }
         byte op_setbit(byte pos, byte value)    // Set a specific bit in the byte
         {
             byte bit = (byte)(0x01 << pos);
@@ -2188,17 +2262,11 @@ namespace sharpGB
             byte bit = (byte)((0x01 << pos) ^ 1);
             return (byte)(value & bit);
         }
-        bool op_bit(byte pos, byte value)       // Tests a bit in a byte
+        void op_bit(byte pos, byte value)       // Tests a bit in a byte
         {
-            byte bit = (byte)(0x01 << pos);
-            return (bit & value) > 0 ? true : false;
+            Processor.SetFlags(((0x01 << pos) & value) > 0 ? 1 : 0, 0, 1, (int)Processor.CarryFlag);
         }
-        byte op_swap(byte value)    // Swaps byte nibbles and sets flag register
-        {
-            byte b = (byte)((value << 4) | (value >> 4));
-            Processor.SetFlags((value == 0) ? 1 : 0, 0, 0, 0);
-            return b;
-        }
+
         void op_push(byte value)    // Push a byte onto the stack
         {
             Memory.Data[Processor.SP] = value;

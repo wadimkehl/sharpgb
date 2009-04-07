@@ -21,6 +21,11 @@ namespace sharpGB
 
         public void SetFlags(int Z, int S, int H, int C)
         {
+            // Normalize to 0 or 1
+            if (Z != 0) Z = 1;
+            if (S != 0) S = 1;
+            if (H != 0) H = 1;
+            if (C != 0) C = 1;
             ZeroFlag = (uint) Z;
             SubtractFlag = (uint)S;
             HalfCarryFlag = (uint)H;
