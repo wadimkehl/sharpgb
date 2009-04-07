@@ -315,7 +315,7 @@ namespace sharpGB
 
             // often used variables
             Processor.HL = (ushort) (Processor.H << 8 | Processor.L);
-            byte value, value2;
+            byte value;
             ushort word;
 
             // In here, PC incrementing/changing must be taken care of as well
@@ -460,7 +460,7 @@ namespace sharpGB
                     Processor.PC += 3;
                     cycles = 16;
                     break;
-                case 0xF0:  // A <- (0xFF00+ n immediate) /* SIGNED/UNSIGNED byte? */
+                case 0xF0:  // A <- (0xFF00+ n immediate) 
                     word = (ushort)(0xFF00 + Memory.Data[Processor.PC + 1]);
                     Processor.A = Memory.readByte(word);
                     Processor.PC += 2;
@@ -527,7 +527,7 @@ namespace sharpGB
                     Processor.PC += 3;
                     cycles = 16;
                     break;
-                case 0xE0:  // (0xFF00+ n immediate) <- A  /* SIGNED/UNSIGNED byte? */
+                case 0xE0:  // (0xFF00+ n immediate) <- A 
                     word = (ushort)(0xFF00 + Memory.Data[Processor.PC + 1]);
                     Memory.writeByte(word, Processor.A);
                     Processor.PC += 2;
@@ -858,7 +858,6 @@ namespace sharpGB
 
 
                 #endregion
-
 
                 #region /* Arithmetic instructions */
 
@@ -1540,7 +1539,6 @@ namespace sharpGB
 
                 #endregion
 
-
                 #region /* Jump instructions */
                 // absolute jumps
                 case 0xC3:  // Unconditional + 2B immediate operands
@@ -1692,7 +1690,6 @@ namespace sharpGB
 
 
                 #endregion
-
 
                 #region /* Logical instructions */
 
@@ -1863,44 +1860,31 @@ namespace sharpGB
 
                 #endregion
 
-
-
                 #region /* Miscellaneous instructions */
 
                 case 0x07:  // Rotate A left
-                    value = (byte)((Processor.A & 128) >> 7);    // extract bit 7
-                    Processor.A = (byte) ((Processor.A << 1) | value );
-                    Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, 0, value);
+                    Processor.A = op_rlc(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
                 case 0x17:  // Rotate A left with carry
-                    value = (byte)((Processor.A & 128) >> 7);    // extract bit 7
-                    Processor.A = (byte)((byte)(Processor.A << 1) | (byte)(Processor.CarryFlag));
-                    Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, 0, value);
+                    Processor.A = op_rl(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
                 case 0x0F:  // Rotate A right 
-                    value = (byte)(Processor.A & 1);    // extract bit 0
-                    Processor.A = (byte)( (value << 7) | (Processor.A >> 1));
-                    Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, 0, value);
+                    Processor.A = op_rrc(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
-
                 case 0x1F:  // Rotate A right with carry
-                    value = (byte) (Processor.A & 1);    // extract bit 0
-                    Processor.A = (byte)((byte)(Processor.CarryFlag << 7) | (byte)(Processor.A >> 1));
-                    Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, 0, value);
+                    Processor.A = op_rr(Processor.A);
                     Processor.PC++;
                     cycles = 4;
                     break;
 
                 case 0xCB:  // Big Operation! includes rotations, shifts, swaps, set etc. 
-                    // check the operand to identify real operation
+                            // check the operand to identify real operation
                     switch (Memory.Data[Processor.PC+1])
                     {
                         // SWAPS
@@ -1937,59 +1921,50 @@ namespace sharpGB
                             Memory.writeByte(Processor.HL, value);
                             cycles = 16;
                             break;
-                        // ROATIONS
+                        // ROTATIONS
                         case 0x07:  // Rotate A left
-                            value = (byte)((Processor.A & 128) >> 7);    // extract bit 7
-                            Processor.A = (byte)((Processor.A << 1) | value);
-                            Processor.SetFlags((Processor.A == 0) ? 1 : 0, 0, 0, value);
+                            Processor.A = op_rlc(Processor.A);
                             cycles = 8;
                             break;
                         case 0x00:  // Rotate B left
-                            value = (byte)((Processor.B & 128) >> 7);    // extract bit 7
-                            Processor.B = (byte)((Processor.B << 1) | value);
-                            Processor.SetFlags((Processor.B == 0) ? 1 : 0, 0, 0, value);
+                            Processor.B = op_rlc(Processor.B);
                             cycles = 8;
                             break;
                         case 0x01:  // Rotate C left
-                            value = (byte)((Processor.C & 128) >> 7);    // extract bit 7
-                            Processor.C = (byte)((Processor.C << 1) | value);
-                            Processor.SetFlags((Processor.C == 0) ? 1 : 0, 0, 0, value);
+                            Processor.C = op_rlc(Processor.C);
                             cycles = 8;
                             break;
                         case 0x02:  // Rotate D left
-                            value = (byte)((Processor.D & 128) >> 7);    // extract bit 7
-                            Processor.D = (byte)((Processor.D << 1) | value);
-                            Processor.SetFlags((Processor.D == 0) ? 1 : 0, 0, 0, value);
+                            Processor.D = op_rlc(Processor.D);
                             cycles = 8;
                             break;
                         case 0x03:  // Rotate E left
-                            value = (byte)((Processor.E & 128) >> 7);    // extract bit 7
-                            Processor.E = (byte)((Processor.E << 1) | value);
-                            Processor.SetFlags((Processor.E == 0) ? 1 : 0, 0, 0, value);
+                            Processor.E = op_rlc(Processor.E);
                             cycles = 8;
                             break;
                         case 0x04:  // Rotate H left
-                            value = (byte)((Processor.H & 128) >> 7);    // extract bit 7
-                            Processor.H = (byte)((Processor.H << 1) | value);
-                            Processor.SetFlags((Processor.H == 0) ? 1 : 0, 0, 0, value);
+                            Processor.H = op_rlc(Processor.H);
                             cycles = 8;
                             break;
                         case 0x05:  // Rotate L left
-                            value = (byte)((Processor.L & 128) >> 7);    // extract bit 7
-                            Processor.L = (byte)((Processor.L << 1) | value);
-                            Processor.SetFlags((Processor.L == 0) ? 1 : 0, 0, 0, value);
+                            Processor.L = op_rlc(Processor.L);
                             cycles = 8;
                             break;
                         case 0x06:  // Rotate (HL) left
-                            value = Memory.readByte(Processor.HL); 
-                            value2 = (byte)((value << 1) | (value >> 7));
-                            Memory.writeByte(Processor.HL,value2);
-                            Processor.SetFlags((value2 == 0) ? 1 : 0, 0, 0, value >> 7);
+                            value = op_rlc(Memory.readByte(Processor.HL)); 
+                            Memory.writeByte(Processor.HL,value);
                             cycles = 16;
                             break;
+                        /*
                         // SETS
-                        case 0xEE:  // Set 5, (HL)
-                            value = Memory.readByte(Processor.HL); 
+                            case 0xEE:  // Set 5, (HL)
+                            
+
+
+                        // RESETS
+                          
+                        // BIT
+                        */    
 
                         default:
                             UnknownOperand = true;
@@ -2175,6 +2150,49 @@ namespace sharpGB
 
         // These functions are "high-level" gbz80 functions
 
+        byte op_rlc(byte value)    // Rotate left, old bit 7 in carry flag
+        {
+            byte bit = (byte)((value & 128) >> 7);    // extract bit 7
+            byte ret = (byte)((value << 1) | bit);
+            Processor.SetFlags((ret == 0) ? 1 : 0, 0, 0, bit);
+            return ret;
+        }
+        byte op_rl(byte value)     // Rotate left through carry, old bit 7 in carry flag
+        {
+            byte bit = (byte)((value & 128) >> 7);    // extract bit 7
+            byte ret = (byte)((byte)(value << 1) | (byte)(Processor.CarryFlag));
+            Processor.SetFlags((ret == 0) ? 1 : 0, 0, 0, bit);
+            return ret;
+        }
+        byte op_rrc(byte value)    // Rotate right, old bit 0 in carry flag
+        {
+            byte bit = (byte)(value & 1);    // extract bit 0
+            byte ret = (byte)((value >> 7) | (bit << 7));
+            Processor.SetFlags((ret == 0) ? 1 : 0, 0, 0, bit);
+            return ret;
+        }
+        byte op_rr(byte value)     // Rotate right through carry, old bit 0 in carry flag
+        {
+            byte bit = (byte)(value & 1);    // extract bit 0
+            byte ret = (byte)((value >> 7) | ((byte)(Processor.CarryFlag) << 7));
+            Processor.SetFlags((ret == 0) ? 1 : 0, 0, 0, bit);
+            return ret;
+        }
+        byte op_setbit(byte pos, byte value)    // Set a specific bit in the byte
+        {
+            byte bit = (byte)(0x01 << pos);
+            return (byte)(value | bit);
+        }
+        byte op_resetbit(byte pos, byte value)  // Reset a specific bit in the byte
+        {
+            byte bit = (byte)((0x01 << pos) ^ 1);
+            return (byte)(value & bit);
+        }
+        bool op_bit(byte pos, byte value)       // Tests a bit in a byte
+        {
+            byte bit = (byte)(0x01 << pos);
+            return (bit & value) > 0 ? true : false;
+        }
         byte op_swap(byte value)    // Swaps byte nibbles and sets flag register
         {
             byte b = (byte)((value << 4) | (value >> 4));
@@ -2209,7 +2227,7 @@ namespace sharpGB
         }
         void op_return()            // Returns to an address retrieved from stack
         {
-            byte word       = (ushort)(op_pop() << 8);    // Pop higher byte of return address
+            byte word       = (byte)(op_pop() << 8);    // Pop higher byte of return address
             Processor.PC    = (ushort)(word + op_pop());  // Pop lower and combine
 
         }
