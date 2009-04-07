@@ -9,11 +9,12 @@ namespace sharpGB
 
         // The registers of the CPU (Z80-wannabe)
         public byte A,B,C,D,E,F,H,L;
-        public ushort SP, PC, HL;
+        public ushort SP, PC, HL, OldPC;
 
         // Some instructions determine the behaviour of the CPU
         public bool IME;                    // Turn on/off interrupt handling
         public int DIsignaled, EIsignaled;  // Instructions DI and EI set these
+        public bool SkipPCCounting;         // Needed for special case if opcode Halt + Disabled interrupts
         public bool CPUHalt, CPUStop;       // Set by instructions as well
 
         // The four flag register entries
