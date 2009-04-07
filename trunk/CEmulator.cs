@@ -204,7 +204,7 @@ namespace sharpGB
             CurrentOPcode = Memory.Data[Processor.PC];
 
             // Check if the PC position is a breakpoint and that the last breakpoint is ignored
-            if (BreakPoints.Contains(Processor.PC) && (LastBreakPoint != Processor.PC))
+            if (BreakPoints.Contains(Processor.PC) && (Processor.OldPC != Processor.PC))
             {
                 BreakPointReached = true;
                 LastBreakPoint = Processor.PC;
@@ -213,6 +213,7 @@ namespace sharpGB
             }
 
             // Else run the operation and save clock cycle of OPcode
+            Processor.OldPC = Processor.PC;
             LastInstructionClockCycle = DecodeAndExecute(CurrentOPcode);
 
             // Check if there is a reason to halt the emulation
@@ -1627,6 +1628,7 @@ namespace sharpGB
                     cycles = 4;
                     break;
 
+                #region CB
                 case 0xCB:  // Big Operation! includes rotations, shifts, swaps, set etc. 
                             // check the operand to identify real operation
                     switch (Memory.Data[Processor.PC+1])
@@ -1976,10 +1978,10 @@ namespace sharpGB
 
 
                         // RESETS
-                          
-                        // BIT
-                            
 
+                        // BIT
+
+               
                         default:
                             UnknownOperand = true;
                             cycles = 0;
@@ -1988,7 +1990,7 @@ namespace sharpGB
                     }
                     Processor.PC += 2;
                     break;
-
+                #endregion
 
                 case 0x2F:  // Complement A
                     Processor.A = (byte)~Processor.A;
@@ -2020,7 +2022,8 @@ namespace sharpGB
                     break;
 
                 case 0x76:  // HALT
-                    Processor.CPUHalt = true;
+                    if (Processor.IME) Processor.CPUHalt = true;
+                    else Processor.SkipPCCounting = true;
                     Processor.PC++;
                     cycles = 4;
                     break;
@@ -2059,6 +2062,13 @@ namespace sharpGB
                     UnknownOPcode = true;
                     cycles = 0;
                     break;
+            }
+
+            // Check if combination HALT + DI occured -> skip one PC counting
+            if (Processor.SkipPCCounting)
+            {
+                Processor.SkipPCCounting = false;
+                Processor.PC = Processor.OldPC; 
             }
 
             return cycles;
@@ -2110,9 +2120,6 @@ namespace sharpGB
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFE;
                 op_reset(0x0040);
-                ClockCyclesElapsed += 12; // correct cycles?
-                LYCounter += 12;
-                MachineCyclesElapsed++;
                 
             }
             // LCD STAT
@@ -2122,9 +2129,6 @@ namespace sharpGB
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFD;
                 op_reset(0x0048);
-                ClockCyclesElapsed += 12; // correct cycles?
-                LYCounter += 12;
-                MachineCyclesElapsed++;
             }
             // TIMER
             if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x04) > 0) &&
@@ -2133,9 +2137,6 @@ namespace sharpGB
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xFB;
                 op_reset(0x0050);
-                ClockCyclesElapsed += 12; // correct cycles?
-                LYCounter += 12;
-                MachineCyclesElapsed++;
             }
             // SERIALIO
             if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x08) > 0) &&
@@ -2144,9 +2145,6 @@ namespace sharpGB
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xF7;
                 op_reset(0x0058);
-                ClockCyclesElapsed += 12; // correct cycles?
-                LYCounter += 12;
-                MachineCyclesElapsed++;
             }
             // INPUT
             if (((Memory.Data[(int)CMemory.HardwareRegisters.IE] & 0x10) > 0) &&
@@ -2155,9 +2153,6 @@ namespace sharpGB
                 Processor.IME = false;
                 Memory.Data[(int)CMemory.HardwareRegisters.IF] &= 0xEF;
                 op_reset(0x0060);
-                ClockCyclesElapsed += 12; // correct cycles?
-                LYCounter += 12;
-                MachineCyclesElapsed++;
             } 
         }
 
